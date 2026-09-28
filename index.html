@@ -1,0 +1,1832 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>날씨 조종실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Jua&display=swap">
+<style>
+:root{
+  --paper:#EDF1F4; --surface:#FFFFFF; --ink:#1E3350; --ink2:#52637A; --line:#D5DDE5; --track:#E2E8EE;
+  --accent:#F5B700; --accent-soft:#FFF4CF; --focus:#1E6FD9;
+  --temp:#E2553B; --wind:#13A388; --hum:#3A7FD5; --cloud:#74829A; --rain:#5B4FD9;
+  --ok:#1F9D55; --no:#D64545; --meh:#C98A00;
+  --font:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif;
+  --display:'Jua','IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1A28; --surface:#15243A; --ink:#E6EDF5; --ink2:#A5B4C6; --line:#2B3D55; --track:#2B3D55;
+    --accent-soft:#3A3212; --focus:#72B2FF; --cloud:#9AA7BD; --rain:#8C82F2; --hum:#5C9BEA;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1A28; --surface:#15243A; --ink:#E6EDF5; --ink2:#A5B4C6; --line:#2B3D55; --track:#2B3D55;
+  --accent-soft:#3A3212; --focus:#72B2FF; --cloud:#9AA7BD; --rain:#8C82F2; --hum:#5C9BEA;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+[hidden]{display:none !important}
+
+.app{max-width:1280px;margin:0 auto;padding:0 20px 40px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:16px 0}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{width:44px;height:44px;flex:none}
+.brand h1{font:400 30px/1 var(--display);margin:0;letter-spacing:-.01em}
+.brand p{margin:5px 0 0;font-size:13px;color:var(--ink2)}
+.steps{display:flex;gap:4px;background:var(--surface);padding:5px;border-radius:999px;border:1px solid var(--line)}
+.step{display:flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--ink2);font-weight:600;font-size:15px;padding:6px 16px 6px 6px;border-radius:999px;cursor:pointer;min-height:44px;white-space:nowrap}
+.step .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--track);color:var(--ink);font:400 15px var(--display)}
+.step[aria-current="step"]{background:var(--ink);color:var(--surface)}
+.step[aria-current="step"] .n{background:var(--accent);color:#1E3350}
+.step.done .n{background:var(--ok);color:#fff}
+
+.main{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(360px,1fr);gap:20px;align-items:start}
+.scene-col{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+.scene{position:relative;border-radius:22px;overflow:hidden;box-shadow:0 0 0 1px var(--line);background:#B8DAF1}
+.scene svg{display:block;width:100%;height:auto}
+.scene .fade{transition:opacity .7s ease}
+.scene .shadow{opacity:var(--sh,.2);transition:opacity .7s ease}
+.scene .inst{cursor:pointer;outline:none}
+.scene .inst:focus-visible .hit{stroke:var(--focus);stroke-width:2.5}
+.scene .tail{animation:tail 1.3s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 0}
+@keyframes tail{from{transform:rotate(-4deg)}to{transform:rotate(5deg)}}
+.scene .breath{animation:breath 2.6s ease-out infinite;transform-box:fill-box;transform-origin:0 50%}
+@keyframes breath{0%{opacity:0;transform:scale(.35)}18%{opacity:.95}100%{opacity:0;transform:translate(9px,-7px) scale(1.25)}}
+.scene .sweat{animation:sweat 1.7s ease-in infinite;transform-box:fill-box}
+.scene .sweat.s2{animation-delay:.85s}
+@keyframes sweat{0%{transform:translateY(-2px);opacity:0}25%{opacity:1}100%{transform:translateY(9px);opacity:0}}
+.shimmer path{animation:shim 2.2s ease-in-out infinite;transform-box:fill-box}
+.shimmer path:nth-child(2){animation-delay:.7s}
+.shimmer path:nth-child(3){animation-delay:1.4s}
+@keyframes shim{0%{transform:translateY(4px);opacity:0}50%{opacity:.55}100%{transform:translateY(-16px);opacity:0}}
+.scene stop{transition:stop-color .9s ease}
+.caption.info{background:#1E3350;color:#fff;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.caption{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;width:max-content;max-width:calc(100% - 96px);text-align:center;background:rgba(255,255,255,.95);color:#1E3350;font-weight:600;font-size:15px;line-height:1.4;padding:8px 14px;border-radius:14px;box-shadow:0 2px 0 rgba(30,51,80,.18)}
+.cover{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#1E3350;color:#fff;font:400 16px var(--display);padding:8px 18px;border-radius:999px;white-space:nowrap}
+.scene-note{margin:10px 4px 0;font-size:13.5px;color:var(--ink2)}
+.steam path{animation:rise 2.4s ease-in-out infinite}
+.steam path:nth-child(2){animation-delay:.8s}
+.steam path:nth-child(3){animation-delay:1.6s}
+@keyframes rise{0%{transform:translateY(6px);opacity:0}40%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px 22px 26px}
+.stage h2{font:400 27px/1.2 var(--display);margin:0}
+.stage h3{font:400 21px/1.3 var(--display);margin:0}
+.lead{margin:6px 0 16px;color:var(--ink2);font-size:15.5px}
+.stage-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+/* controls */
+.ctls{border-top:1px solid var(--line)}
+.ctl{--c:var(--ink);position:relative;padding:14px 4px 14px 18px;border-bottom:1px solid var(--line);transition:background .3s}
+.ctl::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:4px;border-radius:4px;background:var(--c)}
+.ctl[data-el="temp"],[data-el="temp"]{--c:var(--temp)}
+.ctl[data-el="wind"],[data-el="wind"]{--c:var(--wind)}
+.ctl[data-el="hum"],[data-el="hum"]{--c:var(--hum)}
+.ctl[data-el="cloud"],[data-el="cloud"]{--c:var(--cloud)}
+.ctl[data-el="rain"],[data-el="rain"]{--c:var(--rain)}
+.ctl.hl{background:linear-gradient(90deg,color-mix(in srgb,var(--c) 13%,transparent),transparent 85%)}
+.ctl.hl .ctl-name::after{content:"살펴보기";font:600 11.5px var(--font);color:#fff;background:var(--c);border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:3px}
+.ctl-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.ctl-name{font:400 21px/1.2 var(--display);display:inline-flex;align-items:center;gap:10px}
+.ei{width:34px;height:34px;border-radius:11px;display:inline-grid;place-items:center;flex:none;color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 22%,transparent)}
+.ei svg{width:22px;height:22px}
+.ctl-val{font:400 27px/1.1 var(--display);color:var(--c);white-space:nowrap;text-align:right}
+.ctl-val small{font-size:15px;margin-left:3px}
+.ctl-val .kind{font:600 12.5px var(--font);color:#fff;background:var(--c);border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:4px}
+.ctl-def{margin:2px 0 6px;font-size:14px;color:var(--ink2)}
+.ctl-tip{margin:8px 0 0;font-size:13.5px;color:var(--ink2);padding-left:10px;border-left:2px solid var(--c)}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-top:-3px}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:36px;background:transparent;cursor:pointer;margin:0;--p:50%}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:6px;background:linear-gradient(to right,var(--c) var(--p),var(--track) var(--p))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,var(--c) 0 3.5px,#fff 4px);border:5px solid var(--c);margin-top:-10px;box-shadow:0 2px 4px rgba(20,35,60,.3);transition:transform .12s}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.12)}
+input[type=range]::-moz-range-track{height:10px;border-radius:6px;background:var(--track)}
+input[type=range]::-moz-range-progress{height:10px;border-radius:6px;background:var(--c)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle,var(--c) 0 3px,#fff 3.5px);border:5px solid var(--c);box-shadow:0 2px 4px rgba(20,35,60,.3)}
+input.temp-range::-webkit-slider-runnable-track{background:linear-gradient(to right,#3A7FD5,#9CC7EE 22%,#F5D06B 58%,#E2553B)}
+input.temp-range::-moz-range-track{background:linear-gradient(to right,#3A7FD5,#9CC7EE 22%,#F5D06B 58%,#E2553B)}
+input.temp-range::-moz-range-progress{background:transparent}
+input[type=range]:focus-visible{outline:none}
+input[type=range]:focus-visible::-webkit-slider-thumb{outline:3px solid var(--focus);outline-offset:2px}
+input[type=range]:focus-visible::-moz-range-thumb{outline:3px solid var(--focus);outline-offset:2px}
+
+.wind-row{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-top:4px}
+.dirpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:4px}
+.dirpad button{border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:13.5px;border-radius:11px;cursor:pointer;padding:0}
+.dirpad button[aria-pressed="true"]{background:var(--wind);border-color:var(--wind);color:#fff}
+@media (hover:hover){.dirpad button:not([aria-pressed="true"]):hover,.seg button:not([aria-pressed="true"]):hover,.tile:not([aria-pressed="true"]):not([aria-disabled]):hover,.opt:not([aria-pressed="true"]):not([aria-disabled]):hover{background:color-mix(in srgb,var(--ink) 5%,var(--surface))}.btn.primary:hover:not(:disabled){filter:brightness(1.04)}}
+.dir-c{display:grid;place-items:center;color:var(--ink)}
+.dir-c svg{width:40px;height:40px}
+.dir-arrow{transition:transform .35s ease,opacity .3s}
+.spd-lab{font-size:14px;color:var(--ink2)}
+.spd-lab b{color:var(--wind);font-weight:700}
+
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+.seg button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 7px;border:1.5px solid var(--line);border-radius:13px;background:var(--surface);font-weight:600;font-size:13px;cursor:pointer;min-height:66px}
+.seg button svg{width:32px;height:32px}
+.seg button[aria-pressed="true"]{border-color:var(--cloud);box-shadow:inset 0 0 0 1.5px var(--cloud);background:color-mix(in srgb,var(--cloud) 14%,var(--surface))}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:10px 22px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font:400 18px var(--display);cursor:pointer;transition:transform .08s}
+.btn.primary{background:linear-gradient(#FFD34A,#F5B700);border-color:#1E3350;color:#1E3350;box-shadow:0 3px 0 #1E3350}
+.btn.primary:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #1E3350}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink2);font:600 15px var(--font);min-height:44px;padding:8px 12px}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.send{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.need{font-size:13.5px;color:var(--ink2)}
+
+/* stage 1 */
+.found{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.found-n{font-size:14px;color:var(--ink2);font-weight:600}
+.found-n b{font:400 20px var(--display);color:var(--ink)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:4px;font-weight:600;font-size:13px;padding:3px 11px 3px 7px;border-radius:999px;border:1.5px dashed var(--line);color:var(--ink2);transition:background .3s,color .3s}
+.chip.on{border:1.5px solid var(--c);background:var(--c);color:#fff}
+.chip svg{width:15px;height:15px;color:var(--c)}
+.chip.on svg{color:#fff}
+.nudge{margin-top:14px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--hum) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--hum) 35%,transparent);font-size:14.5px;display:grid;gap:4px}
+.nudge b{font-weight:700}
+.rec{margin-top:24px;animation:appear .5s ease both}
+@keyframes appear{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.sub{margin:4px 0 12px;font-size:14.5px;color:var(--ink2)}
+.now{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;border:1.5px dashed var(--line)}
+.now-ic svg{width:44px;height:44px;display:block}
+.now-w{font:400 20px/1.2 var(--display)}
+.now-t{font-size:14px;color:var(--ink2)}
+.tbl-wrap{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:470px;font-size:14px}
+th,td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+th{font-weight:700;font-size:12.5px;color:var(--ink2)}
+th[data-el]{box-shadow:inset 0 3px 0 var(--c)}
+th[data-el] svg{width:14px;height:14px;color:var(--c);vertical-align:-2px;margin-right:3px}
+td.w{display:flex;align-items:center;gap:6px;justify-content:flex-start;font-weight:600}
+td.w svg{width:24px;height:24px}
+.think{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.think .q{margin:0 0 8px;font-size:15px;font-weight:500}
+details{margin:0 0 14px;font-size:14.5px}
+summary{cursor:pointer;font-weight:700;color:var(--hum);min-height:32px;display:flex;align-items:center}
+details p{margin:6px 0 0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--hum) 9%,var(--surface))}
+
+/* stage 2 */
+.dots{display:flex;gap:6px}
+.dot{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font:400 15px var(--display);color:var(--ink2);cursor:pointer;padding:0}
+.dot.cur{border-color:var(--ink);border-width:2px;color:var(--ink)}
+.dot.done{background:var(--ok);border-color:var(--ok);color:#fff}
+.dot.done.cur{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ok)}
+.order{display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:18px;background:var(--accent-soft);margin-bottom:8px}
+.avatar{flex:none;width:62px;height:62px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px #1E3350}
+.avatar svg{width:100%;height:100%;display:block}
+.who{font:400 18px var(--display)}
+.say{margin:2px 0 0;font-size:16px}
+.hint-btn{border:0;background:transparent;color:var(--hum);font-weight:700;font-size:14.5px;padding:8px 2px;cursor:pointer;min-height:40px}
+.hint{margin:0 0 10px;font-size:14.5px}
+.hint .tag{margin:0 4px 0 0}
+
+.result{margin-top:16px;transition:opacity .3s}
+.result.stale{opacity:.45}
+.result h4{font:400 17px var(--display);margin:14px 0 6px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.checks li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;font-size:15px;line-height:1.5}
+.mark{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px}
+.mark.ok{background:var(--ok)} .mark.no{background:var(--no)} .mark.meh{background:var(--meh)}
+.tag{display:inline-block;font-weight:700;font-size:12px;padding:1px 8px;border-radius:999px;color:#fff;background:var(--c);margin-right:6px;vertical-align:1px}
+.retry{margin:12px 0 0;font-size:14.5px;color:var(--ink2)}
+.win{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-top:16px;padding:16px 18px;border-radius:18px;border:2px solid var(--ok);background:color-mix(in srgb,var(--ok) 7%,var(--surface))}
+.stamp{width:96px;height:96px;animation:stamp .5s cubic-bezier(.2,1.5,.4,1) both;filter:drop-shadow(0 2px 0 rgba(31,157,85,.18))}
+@keyframes stamp{from{transform:scale(1.9);opacity:0}to{transform:scale(1);opacity:1}}
+.learn-lab{font:400 16px var(--display);color:var(--ok);margin:0}
+.learn{margin:2px 0 12px;font-size:15px}
+
+/* stage 3 */
+.fc{border:2px solid var(--ink);border-radius:18px;overflow:hidden;margin-bottom:20px}
+.fc-head{background:var(--ink);color:var(--surface);padding:10px 16px 11px}
+.fc-title{font:400 20px/1.3 var(--display);display:block}
+.fc-story{font-size:14px;opacity:.85}
+.fc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line)}
+.fc-cell{background:var(--surface);padding:10px 6px 12px;text-align:center;box-shadow:inset 0 4px 0 var(--c)}
+.fc-ic{color:var(--c);height:24px;margin-top:4px}
+.fc-ic svg{width:22px;height:22px}
+.fc-lab{font-size:12.5px;color:var(--ink2);font-weight:700;margin-top:1px}
+.fc-val{font:400 23px/1.25 var(--display);color:var(--c);word-break:keep-all}
+.fc-val small{font-size:14px;margin-left:2px}
+.fc-sub{font-size:12px;color:var(--ink2);line-height:1.35}
+fieldset.q{border:0;margin:0 0 18px;padding:0;min-width:0}
+.q legend{font:400 19px var(--display);margin-bottom:8px;padding:0}
+.q legend small{font:500 13px var(--font);color:var(--ink2);margin-left:6px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tiles.four{grid-template-columns:repeat(4,1fr)}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 4px;border:1.5px solid var(--line);border-radius:15px;background:var(--surface);font-weight:600;font-size:14px;line-height:1.3;cursor:pointer;min-height:88px;position:relative;text-align:center;word-break:keep-all}
+.tile svg{width:44px;height:44px}
+.tile[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink);background:var(--accent-soft)}
+.tiles.four .tile[aria-pressed="true"]::after{content:"✓";position:absolute;top:5px;right:9px;font-weight:700;font-size:14px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;padding:12px 14px;border:1.5px solid var(--line);border-radius:15px;background:var(--surface);font-weight:500;font-size:15px;line-height:1.45;cursor:pointer;display:flex;gap:12px;align-items:center;min-height:52px}
+.opt .radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);flex:none;transition:border-width .15s}
+.opt[aria-pressed="true"]{border-color:var(--ink);background:var(--accent-soft)}
+.opt[aria-pressed="true"] .radio{border:6px solid var(--ink)}
+.locked .tile,.locked .opt{cursor:default}
+.opt.right{border-color:var(--ok);box-shadow:inset 0 0 0 1.5px var(--ok)}
+.opt.wrong{border-color:var(--no);box-shadow:inset 0 0 0 1.5px var(--no)}
+.res-head{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;background:var(--accent-soft)}
+.stars{display:inline-flex;gap:2px}
+.stars .st{width:28px;height:28px}
+.res-head span:last-child{font:400 18px var(--display)}
+
+.summary .sum-top{display:flex;gap:18px;align-items:center;padding:16px 18px;border-radius:18px;background:var(--accent-soft);margin-bottom:20px}
+.medal{width:62px;height:78px;flex:none}
+.big-stars{font:400 44px/1 var(--display);white-space:nowrap}
+.big-stars small{font-size:18px;color:var(--ink2)}
+.sum-top p{margin:0;font-size:15px}
+.note{display:grid;grid-template-columns:auto 1fr;margin:10px 0 20px;border-top:1px solid var(--line)}
+.note dt{padding:12px 16px 12px 0;font:400 18px var(--display);color:var(--c);border-bottom:1px solid var(--line);white-space:nowrap;display:flex;align-items:center;gap:8px}
+.note dt svg{width:22px;height:22px}
+.note dd{margin:0;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
+.refl-lab{display:block;font:400 18px var(--display);margin-bottom:8px}
+textarea{width:100%;min-height:92px;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font:15px/1.5 var(--font);background:var(--surface);color:var(--ink);resize:vertical}
+.saved{font-size:14px;color:var(--ok);font-weight:600}
+
+@media (max-width:900px){
+  .app{padding:0 14px 32px}
+  .main{grid-template-columns:1fr;gap:10px}
+  .scene-col{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--paper);padding:6px 0 8px}
+  .scene{width:min(100%,calc(36vh * 640 / 420));margin:0 auto;border-radius:18px}
+  .scene-note{display:none}
+  .caption{font-size:12.5px;line-height:1.35;padding:4px 10px;bottom:6px;border-radius:10px;max-width:calc(100% - 64px)}
+  .cover{font-size:14px;top:10px;padding:6px 14px}
+  .top{padding:12px 0 6px}
+  .steps{width:100%}
+  .step{flex:1;justify-content:center;padding:6px 8px;font-size:14px;gap:6px}
+  .panel{padding:18px 16px 22px;border-radius:18px}
+}
+@media (max-width:440px){
+  .step .n{display:none}
+  .brand h1{font-size:26px}
+  .tiles.four{grid-template-columns:repeat(2,1fr)}
+  .fc-grid{grid-template-columns:repeat(3,1fr)}
+  .fc-cell:nth-child(5){grid-column:span 2}
+  .dirpad{grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px)}
+  .wind-row{gap:12px}
+  .win{grid-template-columns:1fr;justify-items:start}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+
+.quest{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;max-width:calc(100% - 200px);padding:7px 14px 7px 8px;border-radius:999px;background:rgba(255,255,255,.95);color:#1E3350;font-size:14px;font-weight:600;box-shadow:0 2px 10px rgba(20,35,60,.18);white-space:nowrap;animation:qin .4s ease both}
+.quest b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#FFC53D;border:1.5px solid #1E3350;font-size:12px;font-weight:800}
+.q-badge{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#FFC53D;border:2px solid #1E3350;font-weight:800;font-size:14px}
+.q-badge.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.q-dots{display:inline-flex;gap:4px;margin-left:2px}
+.q-dots i{width:9px;height:9px;border-radius:50%;background:#D5DCE4}
+.q-dots i.on{background:var(--ok)}
+@keyframes qin{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}
+.bubble{position:absolute;z-index:5;width:min(270px,72%);padding:11px 13px 12px;border-radius:14px;background:#fff;color:#1E3350;box-shadow:0 6px 24px rgba(15,30,55,.28);border:2px solid #1E3350;font-size:14px;line-height:1.45}
+.bubble::after{content:"";position:absolute;left:var(--ax,50%);bottom:-9px;width:14px;height:14px;background:#fff;border-right:2px solid #1E3350;border-bottom:2px solid #1E3350;transform:translateX(-50%) rotate(45deg)}
+.bubble.below::after{bottom:auto;top:-9px;transform:translateX(-50%) rotate(225deg)}
+.bubble.pop{animation:pop .22s ease-out}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.b-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
+.b-head b{font:400 19px var(--display)}
+.b-x{border:0;background:transparent;font-size:22px;line-height:1;color:#52637A;cursor:pointer;padding:0 2px;min-width:32px;min-height:32px}
+.bubble p{margin:0}
+.b-now{margin-top:7px !important;display:inline-block;padding:3px 10px;border-radius:999px;background:#EAF7F3;color:#0E7F69;font-weight:700;font-size:13.5px}
+.scene .badge{cursor:pointer;outline:none}
+.scene .badge .pulse{fill:none;stroke:#FFC53D;stroke-width:3;transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-out infinite}
+.scene .badge:focus-visible circle:nth-child(2){stroke:var(--focus);stroke-width:3}
+@keyframes pulse{from{opacity:.95;transform:scale(1)}to{opacity:0;transform:scale(2.3)}}
+#tags text{transition:opacity .4s}
+#shirt,#towel,#socks{transition:opacity .5s}
+.scene .flow{stroke-dasharray:5 4;animation:flow .8s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-9}}
+.scene .shake{animation:shake .18s ease-in-out infinite alternate;transform-box:view-box;transform-origin:292px 302px}
+@keyframes shake{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+@media (max-width:900px){.quest{font-size:12px;max-width:calc(100% - 130px);padding:5px 10px 5px 6px;white-space:normal;top:6px}.q-badge{width:22px;height:22px;font-size:12px}.bubble{font-size:13px;padding:9px 11px 10px}.b-head b{font-size:17px}}
+@media (prefers-reduced-motion:reduce){.scene .badge .pulse,.scene .flow,.scene .shake{animation:none}}
+.scene .caption{max-width:60%}
+@media (max-width:900px){.scene .caption{max-width:62%}}
+.q-short{display:none}
+@media (max-width:900px){.quest{white-space:nowrap;max-width:none}.q-long{display:none}.q-short{display:inline}.quest b{width:17px;height:17px;font-size:11px}}
+@media (max-width:900px){.quest{left:auto;right:8px;transform:none;animation:none;gap:6px;padding:5px 10px}.quest .q-badge{display:none}}
+</style>
+</head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="iSun" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE98A"/><stop offset="1" stop-color="#FFB61C"/></linearGradient>
+    <linearGradient id="iCloud" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#D6DFE9"/></linearGradient>
+    <linearGradient id="iCloudG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DCE2E9"/><stop offset="1" stop-color="#A7B3C1"/></linearGradient>
+    <linearGradient id="iCloudD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A5B0BE"/><stop offset="1" stop-color="#6C7889"/></linearGradient>
+    <linearGradient id="iDrop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8CC0F5"/><stop offset="1" stop-color="#3A7FD5"/></linearGradient>
+    <linearGradient id="iLogo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A84D2"/><stop offset="1" stop-color="#9ED0F3"/></linearGradient>
+  </defs>
+</svg>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 44 44" aria-hidden="true">
+        <rect width="44" height="44" rx="13" fill="url(#iLogo)"/>
+        <circle cx="28.5" cy="15.5" r="10" fill="#FFF3B0" opacity=".45"/>
+        <circle cx="28.5" cy="15.5" r="6.5" fill="url(#iSun)"/>
+        <path d="M10.5 34h19a6 6 0 0 0 .9-11.93A8.3 8.3 0 0 0 13.2 20.6 6.8 6.8 0 0 0 10.5 34Z" fill="url(#iCloud)"/>
+        <path d="M31 30.5h5.5M33 34.5h4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity=".85"/>
+      </svg>
+      <div>
+        <h1>날씨 조종실</h1>
+        <p>5학년 과학 2. 날씨와 우리 생활</p>
+      </div>
+    </div>
+    <nav class="steps" aria-label="활동 단계">
+      <button type="button" class="step" data-go="1"><span class="n">1</span><span>날씨 만들기</span></button>
+      <button type="button" class="step" data-go="2"><span class="n">2</span><span>날씨 주문</span></button>
+      <button type="button" class="step" data-go="3"><span class="n">3</span><span>날씨 예보관</span></button>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="scene-col">
+      <div class="scene">
+        <svg id="scene-svg" viewBox="0 0 640 420" role="img" aria-label="날씨에 따라 바뀌는 마을 그림">
+          <defs>
+            <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+              <stop id="sky0" offset="0" style="stop-color:#3F88D3"/>
+              <stop id="sky1" offset=".58" style="stop-color:#86BDEB"/>
+              <stop id="sky2" offset="1" style="stop-color:#D6EBF7"/>
+            </linearGradient>
+            <radialGradient id="sunGlow"><stop offset="0" stop-color="#FFF6C4" stop-opacity=".95"/><stop offset=".32" stop-color="#FFEA8F" stop-opacity=".45"/><stop offset="1" stop-color="#FFEA8F" stop-opacity="0"/></radialGradient>
+            <radialGradient id="sunDisc" cx=".38" cy=".34" r=".72"><stop offset="0" stop-color="#FFF8CC"/><stop offset=".5" stop-color="#FFDA4A"/><stop offset="1" stop-color="#FFBE1A"/></radialGradient>
+            <linearGradient id="cgD" gradientUnits="userSpaceOnUse" x1="0" y1="-40" x2="0" y2="20"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".62" stop-color="#F6F9FC"/><stop offset="1" stop-color="#D3DEEA"/></linearGradient>
+            <linearGradient id="cgO" gradientUnits="userSpaceOnUse" x1="0" y1="-40" x2="0" y2="20"><stop offset="0" stop-color="#D5DBE2"/><stop offset="1" stop-color="#A3AEBA"/></linearGradient>
+            <linearGradient id="cgG" gradientUnits="userSpaceOnUse" x1="0" y1="-40" x2="0" y2="20"><stop offset="0" stop-color="#C9D0D8"/><stop offset="1" stop-color="#8E99A6"/></linearGradient>
+            <linearGradient id="cgR" gradientUnits="userSpaceOnUse" x1="0" y1="-40" x2="0" y2="20"><stop offset="0" stop-color="#9AA4B0"/><stop offset="1" stop-color="#65717F"/></linearGradient>
+            <linearGradient id="cgS" gradientUnits="userSpaceOnUse" x1="0" y1="-40" x2="0" y2="20"><stop offset="0" stop-color="#E6EAEF"/><stop offset="1" stop-color="#AEB8C4"/></linearGradient>
+            <linearGradient id="bandO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B9C1CA"/><stop offset="1" stop-color="#CBD2D9"/></linearGradient>
+            <linearGradient id="bandR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6B7684"/><stop offset="1" stop-color="#8994A1"/></linearGradient>
+            <linearGradient id="bandS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B7C0CA"/><stop offset="1" stop-color="#CED5DC"/></linearGradient>
+            <linearGradient id="hillG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A6D38C"/><stop offset="1" stop-color="#84BC6F"/></linearGradient>
+            <linearGradient id="groundG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7EC067"/><stop offset="1" stop-color="#5B9B4C"/></linearGradient>
+            <linearGradient id="snowG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DFE8F2"/></linearGradient>
+            <linearGradient id="roofG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E88463"/><stop offset="1" stop-color="#C4533B"/></linearGradient>
+            <linearGradient id="glassG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#DDF1FC"/><stop offset="1" stop-color="#8DC4EA"/></linearGradient>
+            <linearGradient id="doorG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A56E48"/><stop offset="1" stop-color="#7C4D2F"/></linearGradient>
+            <linearGradient id="puddleG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9C4DD"/><stop offset="1" stop-color="#5E86AD"/></linearGradient>
+            <linearGradient id="hazeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F7FA" stop-opacity=".1"/><stop offset=".42" stop-color="#F4F7FA" stop-opacity=".6"/><stop offset=".7" stop-color="#F4F7FA" stop-opacity=".95"/><stop offset="1" stop-color="#F4F7FA" stop-opacity=".35"/></linearGradient>
+            <radialGradient id="flakeG"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+            <radialGradient id="vigG" cx=".5" cy=".45" r=".75"><stop offset=".62" stop-color="#0B1A2E" stop-opacity="0"/><stop offset="1" stop-color="#0B1A2E" stop-opacity=".16"/></radialGradient>
+            <linearGradient id="poleG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8E9AA7"/><stop offset=".5" stop-color="#B3BDC7"/><stop offset="1" stop-color="#6F7B88"/></linearGradient>
+            <linearGradient id="trunkG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6A4630"/><stop offset=".55" stop-color="#8A5E40"/><stop offset="1" stop-color="#6A4630"/></linearGradient>
+            <linearGradient id="waterG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FB2EE"/><stop offset="1" stop-color="#3F7ACB"/></linearGradient>
+          </defs>
+
+          <rect width="640" height="420" fill="url(#skyG)"/>
+          <g id="sun" class="fade" transform="translate(520 88)">
+            <circle id="sunGlowC" r="118" fill="url(#sunGlow)"/>
+            <g id="sunRays" stroke="#FFD65A" stroke-width="4" stroke-linecap="round" opacity=".85"></g>
+            <circle r="31" fill="url(#sunDisc)"/>
+            <circle cx="-9" cy="-10" r="9" fill="#FFFFFF" opacity=".3"/>
+          </g>
+
+          <path d="M0 246 C40 230 70 214 110 206 C140 200 160 214 190 220 C225 226 250 200 290 188 C320 180 345 196 370 204 C400 214 425 206 455 196 C490 184 520 198 548 208 C580 220 610 212 640 204 L640 300 L0 300Z" fill="#B3CAD8"/>
+          <path d="M110 206 C140 200 160 214 190 220 C160 222 140 214 118 214 Z M290 188 C320 180 345 196 370 204 C340 204 318 196 296 198Z M455 196 C490 184 520 198 548 208 C520 208 492 200 462 204Z" fill="#A2BBCB"/>
+          <g id="peaks" class="fade" fill="#FFFFFF" style="opacity:0">
+            <path d="M94 211 C101 207 106 205 110 206 C116 206 122 209 128 213 C122 214 118 216 114 214 C110 217 104 213 99 215Z"/>
+            <path d="M270 196 C279 191 285 188 290 188 C296 188 303 191 311 196 C304 198 299 201 294 199 C289 202 283 198 277 200Z"/>
+            <path d="M438 202 C445 198 451 196 455 196 C461 196 467 199 473 203 C467 204 462 206 458 204 C454 207 448 203 443 205Z"/>
+          </g>
+          <path d="M0 268 C50 250 90 244 140 250 C180 255 200 238 250 234 C300 230 330 250 380 252 C430 254 460 232 510 230 C560 228 600 246 640 250 L640 312 L0 312Z" fill="#9DC4AC"/>
+          <g opacity=".95">
+            <rect x="472" y="224" width="11" height="8" fill="#EEE8DE"/><path d="M470 225 L477.5 218 L485 225Z" fill="#D08A74"/>
+            <rect x="490" y="221" width="13" height="9" fill="#EEE8DE"/><path d="M488 222 L496.5 214 L505 222Z" fill="#7F9FC8"/>
+            <circle cx="464" cy="229" r="4.6" fill="#7EB08B"/><circle cx="515" cy="226" r="5.2" fill="#7EB08B"/><circle cx="526" cy="229" r="3.8" fill="#8BBB95"/>
+            <circle cx="206" cy="238" r="4.2" fill="#7EB08B"/><circle cx="216" cy="236" r="5" fill="#8BBB95"/>
+          </g>
+          <g id="clouds"></g>
+          <g id="birds" class="fade" fill="none" stroke="#34495E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></g>
+
+          <path d="M0 292 C80 262 170 262 250 282 C330 302 410 256 510 260 C570 262 615 274 640 282 L640 420 L0 420Z" fill="url(#hillG)"/>
+          <path id="snowBack" class="fade" d="M0 292 C80 262 170 262 250 282 C330 302 410 256 510 260 C570 262 615 274 640 282 L640 420 L0 420Z" fill="url(#snowG)" style="opacity:0"/>
+          <rect id="haze" class="fade" width="640" height="420" fill="url(#hazeG)" style="opacity:0" pointer-events="none"/>
+
+          <g id="house">
+            <ellipse class="shadow" cx="92" cy="337" rx="70" ry="7" fill="#1E3350"/>
+            <rect x="111" y="222" width="14" height="32" fill="#B5543F"/>
+            <rect x="108" y="217" width="20" height="6" rx="1.5" fill="#8E4332"/>
+            <rect x="44" y="262" width="94" height="73" fill="#F7F0E5"/>
+            <rect x="128" y="262" width="10" height="73" fill="#EADFCF"/>
+            <rect x="44" y="266" width="94" height="5" fill="#E4D6C1"/>
+            <path d="M30 268 L89 221 L148 268Z" fill="url(#roofG)"/>
+            <path d="M52 254 H126 M64 244 H114 M76 234 H102" stroke="#B64C35" stroke-width="1.3" opacity=".55"/>
+            <path d="M27 268.5 H151" stroke="#A8452F" stroke-width="3.4" stroke-linecap="round"/>
+            <path id="roofSnow" class="fade" d="M33 266 L89 223 L145 266 C139 271 133 267 127 270 C119 273 113 268 105 271 C97 274 89 269 81 272 C73 274 67 269 59 271 C51 273 42 270 33 266Z" fill="url(#snowG)" style="opacity:0"/>
+            <g id="icicles" class="fade" fill="#E4F4FF" style="opacity:0">
+              <path d="M46 270h3.4l-1.7 9z"/><path d="M60 270h3l-1.5 7z"/><path d="M74 270h3.6l-1.8 10z"/><path d="M92 270h3l-1.5 6.5z"/><path d="M106 270h3.4l-1.7 8.5z"/><path d="M121 270h3l-1.5 7z"/><path d="M134 270h3.4l-1.7 9z"/>
+            </g>
+            <rect x="55" y="280" width="32" height="28" rx="2.5" fill="#FFFFFF"/>
+            <rect x="58" y="283" width="26" height="22" fill="url(#glassG)"/>
+            <rect id="winLight" class="fade" x="58" y="283" width="26" height="22" fill="#FFD27A" style="opacity:0"/>
+            <path d="M58 283 h6.5 q-3.5 8 -1.2 22 h-5.3z M84 283 h-6.5 q3.5 8 1.2 22 h5.3z" fill="#F3C1B3"/><path d="M58 283 h26 v2.4 h-26z" fill="#E7A996"/>
+            <g id="winDew" class="fade" style="opacity:0">
+              <rect x="58" y="283" width="26" height="22" fill="#FFFFFF" opacity=".35"/>
+              <g fill="#FFFFFF" opacity=".9"><circle cx="62" cy="287" r="1"/><circle cx="67" cy="296" r="1.3"/><circle cx="77" cy="289" r=".9"/><circle cx="80" cy="299" r="1.2"/><circle cx="64" cy="301" r=".8"/><circle cx="73" cy="293" r=".7"/></g>
+            </g>
+            <g id="winFrost" class="fade" fill="#FFFFFF" style="opacity:0">
+              <path d="M58 283 h10 q-6 1 -10 8z"/><path d="M84 305 h-10 q6 -1 10 -8z"/><path d="M84 283 h-7 q4 1 7 5z"/><path d="M58 305 h7 q-4 -1 -7 -5z"/>
+            </g>
+            <path d="M71 283v22 M58 294h26" stroke="#FFFFFF" stroke-width="2.4"/>
+            <rect x="53" y="307" width="36" height="4" rx="1.5" fill="#D8C9B2"/>
+            <rect x="99" y="287" width="28" height="48" rx="3" fill="url(#doorG)"/>
+            <rect x="103.5" y="292" width="19" height="15" rx="1.5" fill="none" stroke="#6A3F25" stroke-width="1.3"/>
+            <rect x="103.5" y="311" width="19" height="19" rx="1.5" fill="none" stroke="#6A3F25" stroke-width="1.3"/>
+            <circle cx="121" cy="313" r="2.1" fill="#FFC53D"/>
+            <rect x="95" y="334" width="36" height="4" rx="1.5" fill="#CDBFA8"/>
+            <g id="pot"><path d="M142 326 h15 l-2 11 h-11z" fill="#C8693F"/><rect x="141" y="324" width="17" height="3.5" rx="1.2" fill="#B25A33"/>
+            <g fill="#4FA35E"><ellipse cx="146" cy="317" rx="3.4" ry="7" transform="rotate(-24 146 317)"/><ellipse cx="150" cy="314" rx="3.4" ry="8"/><ellipse cx="154.5" cy="318" rx="3.2" ry="6.5" transform="rotate(26 154.5 318)"/></g></g>
+          </g>
+          <g id="smoke" fill="#EEF2F5"></g>
+
+          <path d="M0 330 C150 318 490 318 640 330 L640 420 L0 420Z" fill="url(#groundG)"/>
+          <path d="M98 337 C104 351 132 361 172 371 C214 382 246 399 256 420 L328 420 C318 396 282 376 234 362 C191 349 142 344 128 337Z" fill="#E8D8B2"/>
+          <path d="M98 337 C104 351 132 361 172 371 C214 382 246 399 256 420" fill="none" stroke="#D5C193" stroke-width="2" opacity=".7"/>
+          <path id="snowGround" class="fade" d="M0 330 C150 318 490 318 640 330 L640 420 L0 420Z" fill="url(#snowG)" style="opacity:0"/>
+          <g id="flowers" class="fade"></g>
+          <g id="puddles" class="fade" style="opacity:0">
+            <ellipse cx="336" cy="382" rx="36" ry="6" fill="url(#puddleG)"/><ellipse cx="330" cy="380.5" rx="18" ry="1.6" fill="#FFFFFF" opacity=".45"/>
+            <ellipse cx="476" cy="400" rx="44" ry="7" fill="url(#puddleG)"/><ellipse cx="468" cy="398" rx="22" ry="1.8" fill="#FFFFFF" opacity=".45"/>
+            <ellipse cx="160" cy="408" rx="28" ry="5" fill="url(#puddleG)"/><ellipse cx="155" cy="406.5" rx="13" ry="1.4" fill="#FFFFFF" opacity=".45"/>
+          </g>
+          <g id="ripples" fill="none" stroke="#E9F2FB" stroke-width="1.2"></g>
+          <g id="tufts" class="fade" stroke="#4A8A3B" stroke-width="1.9" stroke-linecap="round" fill="none"></g>
+
+          <g id="tree">
+            <ellipse id="tshadow" class="shadow" cx="184" cy="346" rx="44" ry="6.5" fill="#1E3350"/>
+            <path d="M186 345 C187 323 188 303 187 282 L198 282 C197 303 198 323 201 345Z" fill="url(#trunkG)"/>
+            <path d="M191 302 C184 294 178 291 171 286" stroke="#7A5236" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+            <g fill="#2E7D45"><circle cx="170" cy="272" r="24"/><circle cx="215" cy="272" r="22"/><circle cx="192" cy="262" r="30"/></g>
+            <g fill="#3E9A55"><circle cx="192" cy="248" r="32"/><circle cx="167" cy="263" r="21"/><circle cx="217" cy="262" r="20"/><circle cx="192" cy="225" r="23"/><circle cx="176" cy="236" r="19"/><circle cx="209" cy="234" r="19"/></g>
+            <g fill="#4DAA62"><ellipse cx="203" cy="225" rx="12" ry="10"/><ellipse cx="218" cy="250" rx="9" ry="8"/><ellipse cx="189" cy="213" rx="9" ry="6.5"/><ellipse cx="176" cy="233" rx="7" ry="5.5"/></g>
+            <g fill="#78C383" opacity=".75"><ellipse cx="206" cy="220" rx="4.5" ry="2.6"/><ellipse cx="221" cy="246.5" rx="3.4" ry="2"/><ellipse cx="191" cy="209.5" rx="3.2" ry="1.8"/></g>
+            <g id="treeSnow" class="fade" fill="url(#snowG)" style="opacity:0">
+              <ellipse cx="192" cy="204" rx="16" ry="6.5"/><ellipse cx="175" cy="219" rx="11" ry="4.6"/><ellipse cx="210" cy="217" rx="11" ry="4.6"/><ellipse cx="160" cy="245" rx="9" ry="3.8"/><ellipse cx="223" cy="244" rx="9" ry="3.8"/>
+            </g>
+          </g>
+
+          <g id="laundry">
+            <ellipse id="lshadow" class="shadow" cx="400" cy="348" rx="66" ry="5.5" fill="#1E3350"/>
+            <rect x="342" y="250" width="4.5" height="97" rx="2" fill="url(#poleG)"/>
+            <rect x="454" y="250" width="4.5" height="97" rx="2" fill="url(#poleG)"/>
+            <circle cx="344.2" cy="249.5" r="3.6" fill="#5F6B78"/><circle cx="456.2" cy="249.5" r="3.6" fill="#5F6B78"/>
+            <path d="M344 256 Q400 272 456 256" stroke="#56606C" stroke-width="1.7" fill="none"/>
+            <g id="steam" class="fade steam" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round" style="opacity:0">
+              <path d="M366 246 q4 -6 0 -11 q-4 -6 0 -11"/><path d="M382 244 q4 -6 0 -11 q-4 -6 0 -11"/><path d="M424 246 q4 -6 0 -11 q-4 -6 0 -11"/>
+            </g>
+            <g id="shirt" transform="translate(372 262)">
+              <path d="M-15 0 L-6 -1 Q0 6 6 -1 L15 0 L23 9 L16 14 L15 34 L-15 34 L-16 14 L-23 9Z" fill="#FFFFFF" stroke="#B5C3D0" stroke-width="1.2" stroke-linejoin="round"/>
+              <path d="M8 1 L15 0 L16 14 L15 34 L9 34Z" fill="#E7EEF5"/>
+              <path d="M-6 -1 Q0 6 6 -1" fill="none" stroke="#B5C3D0" stroke-width="1.2"/>
+              <rect x="-10" y="15" width="6" height="6" rx="1" fill="none" stroke="#C7D3DE" stroke-width="1"/>
+              <rect x="-13" y="-5" width="3.6" height="8" rx="1" fill="#D9A55B"/><rect x="9.4" y="-5" width="3.6" height="8" rx="1" fill="#D9A55B"/>
+            </g>
+            <g id="towel" transform="translate(424 262.5)">
+              <rect x="-12" y="0" width="24" height="38" rx="2" fill="#7CC3E6"/>
+              <rect x="4" y="0" width="8" height="38" fill="#6AB4DA"/>
+              <rect x="-12" y="27" width="24" height="3" fill="#FFFFFF" opacity=".85"/><rect x="-12" y="32" width="24" height="1.8" fill="#FFFFFF" opacity=".6"/>
+              <path d="M-10 38v3 M-6 38v3 M-2 38v3 M2 38v3 M6 38v3 M10 38v3" stroke="#7CC3E6" stroke-width="1.4"/>
+              <rect x="-1.8" y="-5" width="3.6" height="8" rx="1" fill="#D9A55B"/>
+            </g>
+            <g id="socks" transform="translate(445 259)">
+              <path d="M-3.5 0 h7 v13 q0 3 3 4 l3 1 q3 1 2 4 q-1 3 -4 2 l-7 -2 q-4 -1 -4 -5z" fill="#F29E4C"/>
+              <rect x="-3.5" y="0" width="7" height="3" fill="#FFFFFF" opacity=".75"/>
+              <rect x="-1.6" y="-4.5" width="3.2" height="7" rx="1" fill="#D9A55B"/>
+            </g>
+            <g id="drips" class="fade" fill="#3A7FD5" style="opacity:0"><circle r="2.2"/><circle r="2.2"/><circle r="2.2"/><circle r="2.2"/><circle r="2"/></g>
+          </g>
+
+          <g id="station" transform="translate(-14 0)">
+            <ellipse class="shadow" cx="578" cy="348" rx="60" ry="5" fill="#1E3350"/>
+            <g class="inst" data-info="screen" tabindex="0" role="button" aria-label="백엽상 설명 보기">
+              <rect x="520.5" y="300" width="3" height="46" fill="#CFD8E1"/><rect x="556.5" y="300" width="3" height="46" fill="#CFD8E1"/>
+              <rect x="527.5" y="300" width="2.6" height="43" fill="#B8C3CE"/><rect x="550" y="300" width="2.6" height="43" fill="#B8C3CE"/>
+              <rect x="516" y="268" width="48" height="34" rx="2" fill="#FBFCFD" stroke="#BCC8D4" stroke-width="1.2"/>
+              <path d="M520 274h40 M520 279h40 M520 284h40 M520 289h40 M520 294h40" stroke="#D2DAE3" stroke-width="1.7"/>
+              <path d="M540 270v30" stroke="#D2DAE3" stroke-width="1"/>
+              <path d="M511 270.5 L540 257.5 L569 270.5Z" fill="#FFFFFF" stroke="#BCC8D4" stroke-width="1.2" stroke-linejoin="round"/>
+              <path id="stnSnow" class="fade" d="M512 269 L540 256 L568 269 C562 272 556 269 550 271 C544 273 538 270 532 272 C526 273 519 271 512 269Z" fill="url(#snowG)" style="opacity:0"/>
+              <rect class="hit" x="508" y="252" width="64" height="96" fill="transparent"/>
+            </g>
+            <g class="inst" data-info="thermo" tabindex="0" role="button" aria-label="온도계 설명 보기">
+              <rect x="568" y="244" width="13" height="66" rx="6.5" fill="#FFFFFF" stroke="#BCC8D4" stroke-width="1.2"/>
+              <rect x="573" y="250" width="3" height="50" rx="1.5" fill="#E6ECF2"/>
+              <rect id="thermoCol" class="fade" x="573" y="274" width="3" height="26" fill="#E2553B"/>
+              <circle cx="574.5" cy="302.5" r="4.4" fill="#E2553B"/>
+              <path d="M577.8 254h2 M577.8 260h1.3 M577.8 266h2 M577.8 272h1.3 M577.8 278h2 M577.8 284h1.3 M577.8 290h2" stroke="#9AA7B5" stroke-width=".9"/>
+              <rect class="hit" x="565" y="240" width="19" height="74" fill="transparent"/>
+            </g>
+            <rect x="604" y="172" width="4.2" height="175" rx="2" fill="url(#poleG)"/>
+            <rect x="598" y="343" width="16" height="4.5" rx="2" fill="#5F6B78"/>
+            <g class="inst" data-info="wsock" tabindex="0" role="button" aria-label="바람자루 설명 보기">
+              <circle cx="608.5" cy="198" r="2.8" fill="none" stroke="#5F6B78" stroke-width="1.6"/>
+              <g id="wsock"></g>
+              <rect class="hit" x="560" y="186" width="80" height="60" fill="transparent"/>
+            </g>
+            <g class="inst" data-info="anemo" tabindex="0" role="button" aria-label="풍속계 설명 보기">
+              <rect x="605" y="164" width="2.4" height="10" fill="#5F6B78"/>
+              <g id="anemo"></g>
+              <circle cx="606.2" cy="165" r="2.8" fill="#4B5663"/>
+              <rect class="hit" x="584" y="152" width="44" height="26" fill="transparent"/>
+            </g>
+            <g class="inst" data-info="gauge" tabindex="0" role="button" aria-label="우량계 설명 보기">
+              <rect x="620.5" y="338" width="13" height="8" rx="1" fill="#8D99A6"/>
+              <rect x="619" y="314" width="16" height="26" rx="2" fill="#EEF3F7" stroke="#95A3B1" stroke-width="1"/>
+              <rect x="622" y="318" width="10" height="20" rx="1" fill="#DCEAF7"/>
+              <rect id="gaugeW" x="622" y="338" width="10" height="0" fill="url(#waterG)"/>
+              <path d="M632 322h2 M632 327h1.4 M632 332h2" stroke="#7D8A98" stroke-width=".8"/>
+              <path d="M613.5 307.5 h27 l-6 7 h-15z" fill="#C8D2DC" stroke="#95A3B1" stroke-width=".9" stroke-linejoin="round"/>
+              <rect class="hit" x="610" y="300" width="30" height="48" fill="transparent"/>
+            </g>
+          </g>
+
+          <g id="shimmer" class="fade shimmer" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" style="opacity:0">
+            <path d="M40 326 q6 -5 12 0 t12 0 t12 0"/><path d="M300 330 q6 -5 12 0 t12 0 t12 0"/><path d="M470 326 q6 -5 12 0 t12 0 t12 0"/>
+          </g>
+          <g id="kite"></g>
+          <g id="kid"></g>
+          <g id="flyers"></g>
+          <g id="leaves"></g>
+          <g id="precip"></g>
+          <g id="streaks" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></g>
+          <g id="dstreaks" fill="none" stroke="#FFFFFF" stroke-linecap="round"></g>
+          <rect id="shade" class="fade" width="640" height="420" fill="#1F2E45" style="opacity:0;mix-blend-mode:multiply" pointer-events="none"/>
+          <rect id="grade" class="fade" width="640" height="420" fill="#FF9A3C" style="opacity:0" pointer-events="none"/>
+          <rect width="640" height="420" fill="url(#vigG)" pointer-events="none"/>
+
+          <g id="compass" class="inst" data-info="compass" tabindex="0" role="button" aria-label="나침반 설명 보기" transform="translate(56 56)">
+            <circle r="40" fill="#FFFFFF" fill-opacity=".95"/>
+            <circle r="40" fill="none" stroke="#1E3350" stroke-opacity=".14" stroke-width="2"/>
+            <circle r="23.5" fill="#F3F6F9" stroke="#E1E7ED" stroke-width="1.4"/>
+            <path d="M16.6 -16.6l3 -3 M16.6 16.6l3 3 M-16.6 16.6l-3 3 M-16.6 -16.6l-3 -3" stroke="#C3CCD6" stroke-width="1.4" stroke-linecap="round"/>
+            <g font-family="IBM Plex Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">
+              <text y="-27" fill="#E2553B">북</text><text y="35" fill="#52637A">남</text><text x="-31.5" y="4" fill="#52637A">서</text><text x="31.5" y="4" fill="#52637A">동</text>
+            </g>
+            <g id="cArrow"></g>
+            <circle r="2.4" fill="#1E3350"/>
+            <rect id="cLabelBg" x="-30" y="45" width="60" height="22" rx="11" fill="#13A388"/>
+            <text id="cLabel" y="60.5" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF" font-family="IBM Plex Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif">서풍</text>
+            <circle class="hit" r="44" fill="transparent"/>
+          </g>
+          <g id="gcomp" transform="translate(0 -6)" class="inst" data-info="ground" tabindex="0" role="button" aria-label="방위판 설명 보기">
+            <ellipse cx="66" cy="389" rx="53" ry="18" fill="#1E3350" opacity=".16"/>
+            <ellipse cx="66" cy="386" rx="53" ry="18" fill="#FFFFFF" fill-opacity=".93" stroke="#1E3350" stroke-opacity=".3" stroke-width="1.2"/>
+            <ellipse cx="66" cy="386" rx="40" ry="13.5" fill="none" stroke="#DCE3EA" stroke-width="1"/>
+            <path d="M16 386 H116 M66 369 V403" stroke="#C9D2DC" stroke-width="1.1"/>
+            <g id="gArrow"></g>
+            <g font-family="IBM Plex Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif" font-weight="800" text-anchor="middle" stroke="#FFFFFF" stroke-width="3" paint-order="stroke" stroke-linejoin="round">
+              <text x="66" y="365" font-size="11" fill="#E2553B">북</text><text x="66" y="417" font-size="14" fill="#1E3350">남</text>
+              <text x="24" y="390.5" font-size="12.5" fill="#1E3350">서</text><text x="108" y="390.5" font-size="12.5" fill="#1E3350">동</text>
+            </g>
+            <ellipse class="hit" cx="66" cy="386" rx="58" ry="30" fill="transparent"/>
+          </g>
+          <g id="tags" font-family="IBM Plex Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif" font-size="10.5" font-weight="700" fill="#1E3350" text-anchor="middle" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" paint-order="stroke" pointer-events="none">
+            <text data-tag="compass" x="56" y="138">나침반</text>
+            <text data-tag="wsock" x="554" y="228">바람자루</text>
+            <text data-tag="anemo" x="592" y="149">풍속계</text>
+            <text data-tag="thermo" x="561" y="323">온도계</text>
+            <text data-tag="gauge" x="612" y="361">우량계</text>
+            <text data-tag="screen" x="526" y="251">백엽상</text>
+          </g>
+          <g id="badges" font-family="IBM Plex Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif">
+            <g class="badge" data-info="compass" transform="translate(90 22)"><circle class="pulse" r="10"/><circle r="10" fill="#FFC53D" stroke="#1E3350" stroke-width="1.6"/><text y="4.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1E3350">?</text></g>
+            <g class="badge" data-info="wsock" transform="translate(574 184)"><circle class="pulse" r="10"/><circle r="10" fill="#FFC53D" stroke="#1E3350" stroke-width="1.6"/><text y="4.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1E3350">?</text></g>
+            <g class="badge" data-info="thermo" transform="translate(572 238)"><circle class="pulse" r="10"/><circle r="10" fill="#FFC53D" stroke="#1E3350" stroke-width="1.6"/><text y="4.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1E3350">?</text></g>
+            <g class="badge" data-info="gauge" transform="translate(626 298)"><circle class="pulse" r="10"/><circle r="10" fill="#FFC53D" stroke="#1E3350" stroke-width="1.6"/><text y="4.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1E3350">?</text></g>
+          </g>
+        </svg>
+        <div class="caption" id="caption" aria-live="polite"></div>
+        <div class="cover" id="cover" hidden>예보를 읽고 내일을 준비해요</div>
+        <div class="quest" id="quest" hidden></div>
+        <div class="bubble" id="bubble" hidden role="dialog" aria-live="polite"><div class="b-head"><b id="bName"></b><button type="button" class="b-x" id="bClose" aria-label="설명 닫기">×</button></div><p id="bText"></p><p class="b-now" id="bNow"></p></div>
+      </div>
+      <p class="scene-note">땅 위 방위판처럼 그림의 먼 산 쪽이 북쪽, 앞쪽이 남쪽, 왼쪽이 서쪽, 오른쪽이 동쪽이에요.</p>
+    </div>
+    <div class="panel">
+      <!-- 1. 날씨 만들기 -->
+      <section class="stage" id="s1" aria-labelledby="t1">
+        <h2 id="t1">날씨 만들기</h2>
+        <p class="lead">막대를 밀고 버튼을 눌러 마을의 날씨를 바꿔 보세요. 다섯 가지 기상 요소를 모두 움직여 보세요. 그림 속 <b>?</b> 표시를 누르면 관측 기구를 알아볼 수 있어요.</p>
+        <div class="found">
+          <span class="found-n">찾은 기상 요소 <b id="foundN">0</b> / 5</span>
+          <div class="chips" id="chips1">
+            <span class="chip" data-el="temp">기온</span><span class="chip" data-el="wind">바람</span><span class="chip" data-el="hum">습도</span><span class="chip" data-el="cloud">구름의 양</span><span class="chip" data-el="rain">강수량</span>
+          </div>
+        </div>
+        <div class="ctls" id="ctl1"></div>
+        <div class="nudge" id="nudge1" hidden></div>
+        <div class="rec" id="rec" hidden>
+          <h3>날씨 기록장</h3>
+          <p class="sub">맑은 날, 비 오는 날, 눈 오는 날처럼 서로 다른 날씨를 세 가지 이상 만들어 기록하고 비교해 보세요.</p>
+          <div class="now"><span class="now-ic" id="nowIc"></span><div><div class="now-w" id="nowW"></div><div class="now-t" id="nowT"></div></div></div>
+          <div class="row-btns">
+            <button class="btn" id="recBtn" type="button">지금 날씨 기록하기</button>
+            <button class="btn ghost" id="recClear" type="button" hidden>기록 지우기</button>
+          </div>
+          <div class="tbl-wrap" id="recWrap" hidden>
+            <table>
+              <thead><tr><th>날씨</th><th data-el="temp">기온</th><th data-el="hum">습도</th><th data-el="wind">바람</th><th data-el="cloud">구름의 양</th><th data-el="rain">강수량</th></tr></thead>
+              <tbody id="recBody"></tbody>
+            </table>
+          </div>
+          <div class="think" id="think" hidden>
+            <p class="q">기록장을 보고 이야기해 보세요. 비나 눈이 오는 날은 습도와 구름의 양이 어떤가요? 날씨를 기상 요소로 나타내면 무엇이 좋을까요?</p>
+            <details><summary>생각 확인하기</summary><p>비나 눈이 오는 날은 대체로 구름이 많고 습도가 높아요. 날씨를 기상 요소로 나타내면 구체적이고 정확하게 알 수 있고, 날짜나 지역끼리 비교하기도 쉬워요.</p></details>
+            <button class="btn primary" type="button" data-go="2">날씨 주문 받으러 가기</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. 날씨 주문 -->
+      <section class="stage" id="s2" aria-labelledby="t2" hidden>
+        <div class="stage-top"><h2 id="t2">날씨 주문</h2><div class="dots" id="mdots" aria-label="주문 목록"></div></div>
+        <p class="lead">마을 사람들의 부탁을 읽고, 알맞은 날씨를 기상 요소로 만들어 보내 주세요.</p>
+        <div class="order">
+          <div class="avatar" id="oFace" aria-hidden="true"></div>
+          <div><div class="who" id="oWho"></div><p class="say" id="oSay"></p></div>
+        </div>
+        <button class="hint-btn" id="hintBtn" type="button">어떤 기상 요소를 살펴볼까요?</button>
+        <p class="hint" id="hint" hidden></p>
+        <div class="ctls" id="ctl2"></div>
+        <div class="send"><button class="btn primary" id="sendBtn" type="button">이 날씨로 보내기</button></div>
+        <div class="result" id="res2" aria-live="polite"></div>
+      </section>
+
+      <!-- 3. 날씨 예보관 -->
+      <section class="stage" id="s3" aria-labelledby="t3" hidden>
+        <div class="stage-top"><h2 id="t3">날씨 예보관</h2><div class="dots" id="rdots" aria-label="예보 목록"></div></div>
+        <p class="lead">내일 날씨 예보를 읽고 옷차림과 준비물, 마을의 대비 방법을 골라요. 그림 속 날씨는 하루를 보낸 뒤에 나타나요.</p>
+        <div id="round"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<script>
+(function(){
+'use strict';
+var RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+var DIRS = ['북','북동','동','남동','남','남서','서','북서'];
+var CLOUDS = ['맑음','구름 조금','구름 많음','흐림'];
+var NAME = {temp:'기온', wind:'바람', hum:'습도', cloud:'구름의 양', rain:'강수량'};
+var NS = 'http://www.w3.org/2000/svg';
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function $(s,r){ return (r||document).querySelector(s); }
+function $$(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); }
+function batchim(w){ var c=w.charCodeAt(w.length-1); return c>=0xAC00 && c<=0xD7A3 && (c-0xAC00)%28!==0; }
+function josa(w,a,b){ return w + (batchim(w)?a:b); }
+function spdWord(s){ return s===0?'고요':s<=3?'약함':s<=8?'보통':s<=13?'강함':'매우 강함'; }
+function wword(w){ return w.rain>0 ? (w.temp<=0?'눈':'비') : CLOUDS[w.cloud]; }
+function windText(w){ return w.spd===0 ? '바람 없음' : w.dir+'풍 '+w.spd+' m/s'; }
+function nowText(w){ return '기온 '+w.temp+' ℃, 습도 '+w.hum+' %, '+windText(w)+', 구름의 양 '+CLOUDS[w.cloud]+', 강수량 '+w.rain+' mm'; }
+function copy(w){ return {temp:w.temp, hum:w.hum, dir:w.dir, spd:w.spd, cloud:w.cloud, rain:w.rain}; }
+function f1(v){ return (Math.round(v*10)/10).toString(); }
+
+/* ---------- storage ---------- */
+var KEY = 'weather-control-room-v1';
+var P = {found:[], records:[], s1:false, missions:[], stars:[], reflection:'', inst:[]};
+try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved && typeof saved === 'object') { for (var k in P) if (saved[k] !== undefined) P[k] = saved[k]; } } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(P)); } catch(e) {} }
+
+/* ---------- icons ---------- */
+function sv(inner, vb, cls){ return '<svg viewBox="'+(vb||'0 0 32 32')+'"'+(cls?' class="'+cls+'"':'')+' aria-hidden="true" focusable="false">'+inner+'</svg>'; }
+var CLP = 'M9 26h14.5a5.5 5.5 0 0 0 .8-10.95A7.5 7.5 0 0 0 9.9 13.4 6.3 6.3 0 0 0 9 26z';
+function sunI(cx,cy,r){
+  var s='<g stroke="#FFB61C" stroke-width="2" stroke-linecap="round">';
+  for (var a=0;a<360;a+=45){ var rad=a*Math.PI/180; s+='<path d="M'+f1(cx+Math.cos(rad)*(r+2.8))+' '+f1(cy+Math.sin(rad)*(r+2.8))+'L'+f1(cx+Math.cos(rad)*(r+6))+' '+f1(cy+Math.sin(rad)*(r+6))+'"/>'; }
+  return s+'</g><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="url(#iSun)"/><circle cx="'+f1(cx-r*.3)+'" cy="'+f1(cy-r*.3)+'" r="'+f1(r*.32)+'" fill="#FFFFFF" opacity=".45"/>';
+}
+function cloudI(fill,stroke,t){ return '<path d="'+CLP+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="1.3" stroke-linejoin="round" transform="'+t+'"/>'; }
+function dropI(x,y){ return '<path d="M'+x+' '+(y-3.4)+'q2.3 3.1 2.3 4.6a2.3 2.3 0 0 1-4.6 0q0-1.5 2.3-4.6z" fill="url(#iDrop)"/>'; }
+function flakeI(x,y){ return '<path d="M'+(x-2.5)+' '+y+'h5M'+(x-1.25)+' '+f1(y-2.17)+'l2.5 4.33M'+(x+1.25)+' '+f1(y-2.17)+'l-2.5 4.33" stroke="#4E8FE0" stroke-width="1.3" stroke-linecap="round"/>'; }
+var IC = {
+  sun: sv(sunI(16,16,7)),
+  few: sv(sunI(20.5,11,5) + cloudI('url(#iCloud)','#7D8AA0','translate(0.5 7) scale(.8)')),
+  many: sv(cloudI('url(#iCloudG)','#6E7C92','translate(11 1) scale(.62)') + cloudI('url(#iCloud)','#6E7C92','translate(0 6) scale(.8)')),
+  over: sv(cloudI('url(#iCloudG)','#5A677D','translate(10 -1) scale(.66)') + cloudI('url(#iCloudD)','#4B576B','translate(-1 3) scale(.9)')),
+  rain: sv(cloudI('url(#iCloudD)','#4B576B','translate(2 -5) scale(.85)') + dropI(10.5,25.5) + dropI(16.5,28) + dropI(22.5,25.5)),
+  snow: sv(cloudI('url(#iCloudG)','#56637A','translate(2 -5) scale(.85)') + flakeI(10.5,24.5) + flakeI(16.5,28.5) + flakeI(22.5,24.5)),
+  short: sv('<path d="M14 8 L6 13 L9.5 19.5 L13 17.5 V32 H27 V17.5 L30.5 19.5 L34 13 L26 8 Q23.5 11 20 11 Q16.5 11 14 8Z" fill="#FFC53D" stroke="#2A3547" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 17.5 V32 H17 V14Z" fill="#FFFFFF" opacity=".28"/><path d="M20 19.5l1.2 2.5 2.7.3-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.3z" fill="#FFFFFF"/>','0 0 40 40'),
+  long: sv('<path d="M14 8 L7 11 L4 30 L8.5 31 L13 17 V33 H27 V17 L31.5 31 L36 30 L33 11 L26 8 Q23.5 11 20 11 Q16.5 11 14 8Z" fill="#2E9C8A" stroke="#2A3547" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 20.5h14M13 26h14M5.6 21l4 .9M34.4 21l-4 .9" stroke="#FFFFFF" stroke-width="2.2" opacity=".55"/>','0 0 40 40'),
+  coat: sv('<path d="M13 7 Q20 3 27 7 L33 10 L36 31 L31 32 L28 20 V35 H12 V20 L9 32 L4 31 L7 10Z" fill="#2F5E91" stroke="#2A3547" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.5 16.5q7.5 2 15 0M12.5 23q7.5 2 15 0M12.5 29.5q7.5 2 15 0M7.5 17l4 1M32.5 17l-4 1" stroke="#FFFFFF" stroke-opacity=".32" stroke-width="1.5" fill="none"/><path d="M20 8v27" stroke="#FFC53D" stroke-width="1.8"/><path d="M13.5 7.5 Q20 13 26.5 7.5 Q23 5 20 5.2 Q17 5 13.5 7.5Z" fill="#F3E6D0" stroke="#2A3547" stroke-width="1.2" stroke-linejoin="round"/>','0 0 40 40'),
+  umbrella: sv('<path d="M4.5 20 Q5 7 20 5.5 Q35 7 35.5 20 Q31.5 17 27.5 20 Q23.75 17 20 20 Q16.25 17 12.5 20 Q8.5 17 4.5 20Z" fill="#FFC53D" stroke="#2A3547" stroke-width="1.5" stroke-linejoin="round"/><path d="M20 5.5 Q13.5 10 12.5 20 Q16.25 17 20 20Z M20 5.5 Q30 8 35.5 20 Q31.5 17 27.5 20 Q27 10 20 5.5Z" fill="#FFE08A"/><path d="M20 5.5 Q13.5 10 12.5 20 M20 5.5 V20 M20 5.5 Q26.5 10 27.5 20" stroke="#D69E1E" stroke-width="1" fill="none"/><path d="M20 20v11a3 3 0 0 1 -6 0" fill="none" stroke="#8A5A3C" stroke-width="2.2" stroke-linecap="round"/><path d="M20 5.5V3" stroke="#2A3547" stroke-width="1.6" stroke-linecap="round"/>','0 0 40 40'),
+  hat: sv('<path d="M11 19 Q12 7.5 20 7.5 Q28 7.5 29 19Z" fill="#FFC53D" stroke="#2A3547" stroke-width="1.4"/><rect x="11.4" y="15.5" width="17.2" height="3.5" fill="#E2553B"/><ellipse cx="20" cy="19.5" rx="16" ry="4" fill="#FFD45C" stroke="#2A3547" stroke-width="1.4"/><path d="M8.5 26.5 h9 v3 q0 3.5 -4.5 3.5 q-4.5 0 -4.5 -3.5z M22.5 26.5 h9 v3 q0 3.5 -4.5 3.5 q-4.5 0 -4.5 -3.5z" fill="#1E2A38"/><path d="M17.5 28h5" stroke="#1E2A38" stroke-width="1.6"/><path d="M10.5 28.5l2.5 -1.5M24.5 28.5l2.5 -1.5" stroke="#FFFFFF" stroke-width="1.1" stroke-linecap="round" opacity=".7"/>','0 0 40 40'),
+  scarf: sv('<path d="M6 10 Q20 17 34 10 L34 17.5 Q20 25 6 17.5Z" fill="#E2553B" stroke="#2A3547" stroke-width="1.4" stroke-linejoin="round"/><path d="M11 12.8v7 M16 14.5v7.5 M24 14.5v7.5 M29 12.8v7" stroke="#FFFFFF" stroke-width="1.6" opacity=".55"/><path d="M23 19.5 L26.5 33 L20 34 L18.5 20.5Z" fill="#C9432C" stroke="#2A3547" stroke-width="1.4" stroke-linejoin="round"/><path d="M20.5 34v3M23 33.6v3M25.5 33.2v3" stroke="#C9432C" stroke-width="1.4" stroke-linecap="round"/>','0 0 40 40'),
+  water: sv('<rect x="13" y="10" width="14" height="25" rx="4.5" fill="#E8F3FD" stroke="#2A3547" stroke-width="1.4"/><path d="M13.7 18 h12.6 v12.5 a3.8 3.8 0 0 1 -3.8 3.8 h-5 a3.8 3.8 0 0 1 -3.8 -3.8z" fill="url(#iDrop)"/><rect x="15.5" y="4.5" width="9" height="6.5" rx="1.8" fill="#2F5E91" stroke="#2A3547" stroke-width="1.2"/><path d="M16.5 21v9" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" opacity=".6"/>','0 0 40 40')
+};
+var EI = {
+  temp: sv('<rect x="9.2" y="2.6" width="5.6" height="13.6" rx="2.8" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-width="1.8"/><rect x="11.1" y="7.5" width="1.8" height="8" rx=".9" fill="currentColor"/><circle cx="12" cy="17.8" r="3.9" fill="currentColor"/><path d="M16.8 5.5h2.2M16.8 8.5h1.4M16.8 11.5h2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>','0 0 24 24','ei-svg'),
+  wind: sv('<path d="M3 9h10.5a3 3 0 1 0-3-3M3 13h15a3 3 0 1 1-3 3M3 17h6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>','0 0 24 24','ei-svg'),
+  hum: sv('<path d="M12 3.2C12 3.2 5.8 10.4 5.8 14.6a6.2 6.2 0 0 0 12.4 0C18.2 10.4 12 3.2 12 3.2Z" fill="currentColor" fill-opacity=".16" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 15a3 3 0 0 0 2.7 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/>','0 0 24 24','ei-svg'),
+  cloud: sv('<path d="M7.2 18.5h10.3a3.9 3.9 0 0 0 .6-7.76A5.4 5.4 0 0 0 7.9 9.6 4.5 4.5 0 0 0 7.2 18.5Z" fill="currentColor" fill-opacity=".16" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>','0 0 24 24','ei-svg'),
+  rain: sv('<path d="M5.5 4h13l-2.5 3.6V19a1.8 1.8 0 0 1-1.8 1.8H9.8A1.8 1.8 0 0 1 8 19V7.6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.9 13.2h6.2V19a.9.9 0 0 1-.9.9H9.8a.9.9 0 0 1-.9-.9Z" fill="currentColor"/>','0 0 24 24','ei-svg')
+};
+function wicon(w){ if (w.rain>0) return w.temp<=0?IC.snow:IC.rain; return [IC.sun,IC.few,IC.many,IC.over][w.cloud]; }
+function tag(el){ return '<span class="tag" data-el="'+el+'">'+NAME[el]+'</span>'; }
+function starSVG(on){ return '<svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 16.9l-5.6 2.9 1.1-6.2L3 9.2l6.2-.9z" fill="'+(on?'#FFC53D':'none')+'" stroke="'+(on?'#D69E1E':'#C3CDD8')+'" stroke-width="1.5" stroke-linejoin="round"/></svg>'; }
+var STAMP = '<svg class="stamp" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="stArc" d="M17 52 A33 33 0 0 1 83 52"/></defs><g transform="rotate(-12 50 50)"><circle cx="50" cy="50" r="46" fill="var(--surface)" stroke="var(--ok)" stroke-width="4"/><circle cx="50" cy="50" r="38.5" fill="none" stroke="var(--ok)" stroke-width="1.3"/><text font-family="IBM Plex Sans KR, Apple SD Gothic Neo, sans-serif" font-size="9" font-weight="700" fill="var(--ok)" letter-spacing="1.4"><textPath href="#stArc" startOffset="50%" text-anchor="middle">날씨 주문 완료</textPath></text><text x="50" y="64" text-anchor="middle" font-family="Jua, IBM Plex Sans KR, sans-serif" font-size="25" fill="var(--ok)">해결!</text><path d="M50 72.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="var(--ok)"/></g></svg>';
+var MEDAL = '<svg class="medal" viewBox="0 0 80 100" aria-hidden="true"><path d="M22 0h15l9 38H31z" fill="#3A7FD5"/><path d="M43 0h15L49 38H34z" fill="#E2553B"/><path d="M29 0h3l9 38h-3z" fill="#FFFFFF" opacity=".35"/><circle cx="40" cy="64" r="31" fill="#FFC53D" stroke="#D69E1E" stroke-width="3"/><circle cx="40" cy="64" r="23.5" fill="none" stroke="#FFE08A" stroke-width="2"/><path d="M40 49l4.4 9 9.9 1.4-7.2 7 1.7 9.8L40 71.6l-8.8 4.6 1.7-9.8-7.2-7 9.9-1.4z" fill="#FFFFFF"/><path d="M22 52a20 20 0 0 1 12-10" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" fill="none" opacity=".6"/></svg>';
+
+/* ---------- avatars ---------- */
+function av(bg, body){ return '<svg viewBox="0 0 56 56" aria-hidden="true"><defs><clipPath id="avClip"><circle cx="28" cy="28" r="28"/></clipPath></defs><g clip-path="url(#avClip)"><rect width="56" height="56" fill="'+bg+'"/>'+body+'</g></svg>'; }
+var OLc='#2A3547';
+function head(skin, extra){ return '<rect x="24" y="32" width="8" height="8" fill="'+skin+'"/><circle cx="16.5" cy="26" r="3" fill="'+skin+'" stroke="'+OLc+'" stroke-width="1"/><circle cx="39.5" cy="26" r="3" fill="'+skin+'" stroke="'+OLc+'" stroke-width="1"/><circle cx="28" cy="25" r="11.5" fill="'+skin+'" stroke="'+OLc+'" stroke-width="1.2"/><ellipse cx="21.5" cy="29" rx="2.2" ry="1.4" fill="#F59C95" opacity=".6"/><ellipse cx="34.5" cy="29" rx="2.2" ry="1.4" fill="#F59C95" opacity=".6"/>'+(extra||''); }
+var EYES='<ellipse cx="23.8" cy="25" rx="1.4" ry="1.8" fill="#263241"/><ellipse cx="32.2" cy="25" rx="1.4" ry="1.8" fill="#263241"/><circle cx="24.3" cy="24.3" r=".5" fill="#fff"/><circle cx="32.7" cy="24.3" r=".5" fill="#fff"/>';
+var SMILE='<path d="M24.5 29.8 Q28 33 31.5 29.8" stroke="#7A3B2E" stroke-width="1.3" fill="none" stroke-linecap="round"/>';
+function bodyP(c){ return '<path d="M7 57 C7 45 16 38.5 28 38.5 C40 38.5 49 45 49 57Z" fill="'+c+'" stroke="'+OLc+'" stroke-width="1.2"/>'; }
+var AV = {
+  laundry: av('#DCEEFB', bodyP('#FFFFFF') + '<path d="M18 57 V45 Q28 49 38 45 V57Z" fill="#F29FB5" stroke="'+OLc+'" stroke-width="1"/><path d="M20 45 L22 39.5 M36 45 L34 39.5" stroke="#E07C97" stroke-width="2"/><rect x="33" y="47" width="2.6" height="7" rx="1" fill="#D9A55B" transform="rotate(18 34 50)"/>' +
+    '<path d="M15 33 C12.5 18 20 11.5 28 11.5 C36 11.5 43.5 18 41 33 C38.5 33.5 38 30 38 27 L18 27 C18 30 17.5 33.5 15 33Z" fill="#5A3A2A"/><circle cx="28" cy="10" r="4.6" fill="#5A3A2A"/>' + head('#F4CDA5', EYES+SMILE) + '<path d="M16.8 24 C17.5 16 22.5 13.5 28 13.5 C33.5 13.5 38.5 16 39.2 24 C35 19.5 31 18.8 28 19.8 C25 20.8 21 20.8 16.8 24Z" fill="#5A3A2A"/>'),
+  farm: av('#E7F2D4', bodyP('#6B8E4E') + '<path d="M22.5 38.8 L28 45 L33.5 38.8" stroke="'+OLc+'" stroke-width="1.1" fill="#F4F1E6"/><path d="M12 47h32M10 52h36" stroke="#56743E" stroke-width="1.6" opacity=".6"/>' +
+    head('#EFC49A', '<path d="M22 24.8 q1.8 -1.7 3.6 0 M30.4 24.8 q1.8 -1.7 3.6 0" stroke="#263241" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M21.5 21.5 q2.2 -1.3 4.3 0 M30.2 21.5 q2.2 -1.3 4.3 0" stroke="#E9E9E9" stroke-width="1.6" stroke-linecap="round"/><path d="M22.5 29.5 Q25.5 27.2 28 29.2 Q30.5 27.2 33.5 29.5 Q31 32.2 28 30.8 Q25 32.2 22.5 29.5Z" fill="#F4F4F4" stroke="#C9CDD2" stroke-width=".6"/>') +
+    '<ellipse cx="17.5" cy="23" rx="2.2" ry="3.2" fill="#DADDE1"/><ellipse cx="38.5" cy="23" rx="2.2" ry="3.2" fill="#DADDE1"/><ellipse cx="28" cy="17.5" rx="18.5" ry="4.2" fill="#E9C46A" stroke="#B68B2E" stroke-width="1"/><path d="M18.5 17.5 Q19.5 6 28 6 Q36.5 6 37.5 17.5Z" fill="#F0D27E" stroke="#B68B2E" stroke-width="1"/><path d="M18.9 14 H37.1 V17.2 H18.9Z" fill="#C0392B"/>'),
+  snow: av('#E1EBF8', bodyP('#2F5E91') + '<path d="M18 40.5 Q28 47 38 40.5 Q34 37 28 37.3 Q22 37 18 40.5Z" fill="#F3E6D0" stroke="'+OLc+'" stroke-width="1"/><path d="M28 43v14" stroke="#FFC53D" stroke-width="1.5"/>' +
+    head('#F6CFA9', EYES + '<ellipse cx="21.5" cy="29" rx="2.6" ry="1.7" fill="#F2837A" opacity=".75"/><ellipse cx="34.5" cy="29" rx="2.6" ry="1.7" fill="#F2837A" opacity=".75"/><path d="M24.5 29.5 Q28 34.2 31.5 29.5Z" fill="#7A3B2E"/>') +
+    '<path d="M15.8 23 C15.8 12.5 21.5 9 28 9 C34.5 9 40.2 12.5 40.2 23Z" fill="#E2553B" stroke="'+OLc+'" stroke-width="1.1"/><path d="M20 12 v10 M24 10 v12 M28 9.5 v12.5 M32 10 v12 M36 12 v10" stroke="#C9432C" stroke-width="1.1" opacity=".7"/><rect x="15" y="20" width="26" height="5.2" rx="2.6" fill="#C9432C" stroke="'+OLc+'" stroke-width="1"/><circle cx="28" cy="8" r="3.8" fill="#FFFFFF" stroke="'+OLc+'" stroke-width="1"/>'),
+  kite: av('#FFF0C4', bodyP('#FFC53D') + '<path d="M22 39 Q28 47 34 39" stroke="#E2553B" stroke-width="1.3" fill="none"/><rect x="25.8" y="45.5" width="5.6" height="3.4" rx="1.4" fill="#9AA7B5" stroke="'+OLc+'" stroke-width=".8"/>' +
+    head('#F4CDA5', EYES+SMILE) + '<path d="M17.2 22.5 C17.2 13 22 10.5 28 10.5 C34 10.5 38.8 13 38.8 22.5Z" fill="#13A388" stroke="'+OLc+'" stroke-width="1.1"/><path d="M28 10.5 V22.5" stroke="#0F8A73" stroke-width="1"/><path d="M16.6 21.4 Q28 17.4 39.4 21.4 Q40 24.8 28 23.8 Q16 24.8 16.6 21.4Z" fill="#0F8A73" stroke="'+OLc+'" stroke-width="1"/><circle cx="28" cy="10.8" r="1.4" fill="#0F8A73"/>'),
+  beach: av('#D6F0F1', bodyP('#E2553B') + '<path d="M26.3 44h3.4v3.3H33v3.4h-3.3V54h-3.4v-3.3H23v-3.4h3.3z" fill="#FFFFFF"/>' +
+    '<path d="M17 22 C17 12.5 22 10.8 28 10.8 C34 10.8 39 12.5 39 22Z" fill="#2B211C"/>' + head('#D9A071', SMILE + '<path d="M20.2 23 h7 v2.6 q0 2.8 -3.5 2.8 q-3.5 0 -3.5 -2.8z M28.8 23 h7 v2.6 q0 2.8 -3.5 2.8 q-3.5 0 -3.5 -2.8z" fill="#1E2A38"/><path d="M27.2 24h1.6" stroke="#1E2A38" stroke-width="1.3"/><path d="M21.8 24.7l2 -1.1" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" opacity=".7"/>') +
+    '<path d="M16.8 20.4 Q28 15.8 39.2 20.4 L39.2 22.8 Q28 18.4 16.8 22.8Z" fill="#E2553B" stroke="'+OLc+'" stroke-width=".9"/><path d="M29 20.5 h13.5 q2.4 1.2 0 3.4 h-13.5z" fill="#C9432C" stroke="'+OLc+'" stroke-width=".9"/>'),
+  storm: av('#E6E2FA', bodyP('#2F3E66') + '<path d="M21.5 38.8 L28 48 L34.5 38.8Z" fill="#FFFFFF" stroke="'+OLc+'" stroke-width="1"/><path d="M26.8 40.5 h2.4 l1.1 7 -2.3 2.6 -2.3 -2.6z" fill="#E2553B"/><path d="M21.5 38.8 L25 50 M34.5 38.8 L31 50" stroke="#24304F" stroke-width="1.4"/>' +
+    head('#F4CDA5', EYES+SMILE) + '<path d="M16.5 25 C15.8 15 22 12.2 28.5 12.2 C35.5 12.2 40.5 16 39.8 25 C37.5 18.5 32 17.2 24.5 18.6 C20.8 19.2 18.3 21.8 16.5 25Z" fill="#3A2A22"/>' +
+    '<rect x="41" y="41" width="3.6" height="13" rx="1.6" fill="#3B4756" transform="rotate(20 43 47)"/><circle cx="41.5" cy="40.5" r="4.2" fill="#56626F" stroke="'+OLc+'" stroke-width="1"/><path d="M39.2 39.2h4.6M39 41.2h5" stroke="#8D99A6" stroke-width=".8"/>')
+};
+
+/* ---------- scene ---------- */
+var Scene = (function(){
+  var svg = $('#scene-svg'), scene = $('.scene');
+  var E = {};
+  ['sky0','sky1','sky2','sun','sunGlowC','sunRays','peaks','clouds','birds','snowBack','roofSnow','icicles','winLight','winDew','winFrost','smoke','snowGround','flowers','puddles','ripples','tufts','tree','tshadow','treeSnow','shirt','towel','socks','lshadow','drips','steam','stnSnow','thermoCol','gaugeW','wsock','anemo','shimmer','kite','kid','flyers','leaves','precip','streaks','dstreaks','shade','grade','haze','cArrow','cLabel','cLabelBg','pot','gArrow','tags','badges'].forEach(function(id){ E[id]=document.getElementById(id); });
+  var cap = $('#caption'), cover = $('#cover'), quest = $('#quest'), bubble = $('#bubble');
+  var dripEls = $$('#drips circle');
+  var W = {temp:20,hum:60,dir:'서',spd:2,cloud:1,rain:0}, K = {auto:true}, O = {};
+  var clouds=[], cloudKey='', drops=[], dropKind='', off=0, rayAng=0, anemoAng=0, lastTs=0, potAng=0, twigClock=0;
+  var VPX=320, VPY=236, kidArgs=null;
+  function mk(tag, attrs, parent){ var el=document.createElementNS(NS,tag); for (var a in attrs) el.setAttribute(a, attrs[a]); if (parent) parent.appendChild(el); return el; }
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+
+  /* ---------- static decorations ---------- */
+  for (var r=0;r<12;r++){ var ra=r*Math.PI/6; mk('path',{d:'M'+f1(Math.cos(ra)*42)+' '+f1(Math.sin(ra)*42)+'L'+f1(Math.cos(ra)*54)+' '+f1(Math.sin(ra)*54)}, E.sunRays); }
+  var TUFTS=[[8,352],[70,356],[158,388],[222,366],[364,404],[430,372],[512,388],[596,398],[300,352],[122,398]].map(function(p){
+    var g=mk('g',{},E.tufts); mk('path',{d:'M0 0 q-2 -7 -6.5 -11 M0 0 q.5 -9 1 -14 M0 0 q2 -6 6 -9.5'},g); return {el:g,x:p[0],y:p[1]}; });
+  [[26,350,'#FFFFFF'],[34,354,'#F7A6B8'],[164,352,'#FFFFFF'],[172,356,'#FFD45C'],[214,360,'#F7A6B8'],[418,356,'#FFFFFF'],[426,360,'#FFD45C'],[504,362,'#F7A6B8'],[296,360,'#FFFFFF']].forEach(function(p){
+    var g=mk('g',{transform:'translate('+p[0]+' '+p[1]+')'},E.flowers);
+    mk('path',{d:'M0 0 v6',stroke:'#4A8A3B','stroke-width':'1.3'},g);
+    for (var i=0;i<5;i++){ var a=i*Math.PI*2/5; mk('circle',{cx:f1(Math.cos(a)*2.4),cy:f1(Math.sin(a)*2.4),r:'1.9',fill:p[2]},g); }
+    mk('circle',{r:'1.3',fill:'#F29E1B'},g);
+  });
+  var arms=[], cups=[], i;
+  for (i=0;i<3;i++) arms.push(mk('line',{x1:606.2,y1:165,x2:606.2,y2:165,stroke:'#4B5663','stroke-width':'1.4'},E.anemo));
+  for (i=0;i<3;i++) cups.push(mk('circle',{cx:606,cy:165,r:'3.8',fill:'#E2553B',stroke:'#2A3547','stroke-width':'.8'},E.anemo));
+  var stripes=[], SC=['#F26B3A','#FFFFFF','#F26B3A','#FFFFFF','#F26B3A'];
+  for (i=0;i<5;i++) stripes.push(mk('path',{fill:SC[i],stroke:i%2?'#C9D2DB':'#B84A22','stroke-width':'.8','stroke-linejoin':'round'},E.wsock));
+  var sockMouth = mk('ellipse',{fill:'#6E2A12',stroke:'#F26B3A','stroke-width':'2.2',opacity:0},E.wsock);
+  var ripples=[]; for (i=0;i<16;i++) ripples.push({el:mk('ellipse',{rx:0,ry:0,opacity:0},E.ripples), life:1, x:0, y:0});
+  var leafC=['#5DB870','#8BC34A','#E3B04B','#4FA35E','#A4C95A','#E08E45','#6CBF76','#C9A33F'];
+  var leaves=[]; for (i=0;i<8;i++) leaves.push({el:mk('path',{d:'M-5 0 q5 -5 10 0 q-5 5 -10 0z',fill:leafC[i],opacity:0},E.leaves), x:-99, y:0, sc:1, rot:rnd(0,360), vr:rnd(-300,300), p:rnd(0,6.3), on:false});
+  var streaks=[]; for (i=0;i<6;i++) streaks.push({el:mk('path',{d:'M0 0 C12 -5 26 -5 38 0 S64 5 78 0',opacity:0},E.streaks), x:rnd(-40,660), y:rnd(70,300), k:rnd(.7,1.3)});
+  var dstreaks=[]; for (i=0;i<14;i++) dstreaks.push({el:mk('path',{opacity:0},E.dstreaks), a:rnd(0,6.28), r:rnd(40,420)});
+  var puffs=[]; for (i=0;i<7;i++) puffs.push({el:mk('circle',{r:0,opacity:0},E.smoke), a:i/7});
+  var birds=[]; for (i=0;i<2;i++) birds.push({el:mk('path',{d:''},E.birds), x:120+i*70, y:118+i*20, p:i*1.7});
+  /* flying things */
+  var flyHat = mk('g',{opacity:0},E.flyers);
+  flyHat.innerHTML='<g transform="translate(-268 -246)"><path d="M252.5 250.5 Q253.5 235 268 234 Q282.5 235 283.5 250.5Z" fill="#FFC53D" stroke="#2A3547" stroke-width="1.2"/><path d="M252.8 246 H283.2 V250.3 H252.8Z" fill="#E2553B"/><ellipse cx="268" cy="251.2" rx="22.5" ry="5" fill="#FFD45C" stroke="#2A3547" stroke-width="1.2"/></g>';
+  var twigs=[]; for (i=0;i<3;i++){ var tg=mk('g',{opacity:0},E.flyers); tg.innerHTML='<path d="M-10 0 Q0 -2 10 1" stroke="#7A5236" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="-4" cy="-3.5" rx="4" ry="2.4" fill="#3E9A55"/><ellipse cx="4" cy="-3" rx="4.2" ry="2.5" fill="#5CB86E"/><ellipse cx="9" cy="3" rx="3.6" ry="2.2" fill="#3E9A55"/>'; twigs.push({el:tg, on:false}); }
+  var papers=[]; for (i=0;i<2;i++){ var pg=mk('g',{opacity:0},E.flyers); pg.innerHTML='<path d="M-7 -5 L7 -4 L6 5 L-6 4Z" fill="#FFFFFF" stroke="#B7C3CF" stroke-width=".8"/><path d="M-4 -1.5h8M-4 1.2h6" stroke="#C7D0DA" stroke-width=".8"/>'; papers.push({el:pg, x:-99, y:0, sc:1, rot:0, vr:rnd(200,420), p:rnd(0,6), on:false}); }
+  var dusts=[]; for (i=0;i<5;i++) dusts.push({el:mk('ellipse',{rx:16,ry:5,fill:'#D2BF93',opacity:0},E.flyers), x:-99, y:0, sc:1, rot:0, vr:0, p:rnd(0,6), on:false});
+  var PUD=[[336,382,36,6],[476,400,44,7],[160,408,28,5]];
+  var HANG = {
+    socks:{el:E.socks, px:445, py:259, thr:14, delay:.3, st:'on'},
+    towel:{el:E.towel, px:424, py:262.5, thr:14, delay:1.4, st:'on'},
+    shirt:{el:E.shirt, px:372, py:262, thr:17, delay:.8, st:'on'},
+    hat:  {el:flyHat, px:268, py:246, thr:14, delay:.5, st:'on'}
+  };
+
+  function vec(){ var a=DIRS.indexOf(W.dir)*Math.PI/4; return {x:-Math.sin(a), y:-Math.cos(a)}; }
+  function speed(){ return O.neutral ? 0 : W.spd; }
+  var OPP = {'북':'남','북동':'남서','동':'서','남동':'북서','남':'북','남서':'북동','서':'동','북서':'남동'};
+
+  function autoKid(w){
+    var items = new Set();
+    if (w.rain>0 && w.spd<14) items.add('umbrella');
+    if (w.cloud<=1 && w.rain===0 && w.temp>=25) items.add('hat');
+    if (w.temp<=5) items.add('scarf');
+    if (w.temp>=30 && w.rain===0) items.add('water');
+    return {outfit: w.temp>=25?'short':w.temp>=10?'long':'coat', items: items};
+  }
+  function reacts(w,k){
+    var o=k.outfit, umb=k.items.has('umbrella');
+    return {
+      hot: w.temp>=31 || (o!=='short' && w.temp>=26) || (o==='coat' && w.temp>=16),
+      cold: (o==='short' && w.temp<17) || (o==='long' && w.temp<8) || (w.temp<=2 && !k.items.has('scarf')),
+      wet: w.rain>0 && (!umb || w.spd>=14),
+      flip: umb && w.spd>=14
+    };
+  }
+  function depthNote(w){
+    var v=vec(); if (Math.abs(v.x)>=.3) return '';
+    return v.y<0 ? ' 물건이 우리 쪽(남쪽)으로 날아와요.' : ' 물건이 먼 산 쪽(북쪽)으로 날아가요.';
+  }
+  function windCap(w){
+    if (w.spd>=14) return (w.rain>0 ? '비바람이 매우 세서 우산이 뒤집히고 빨래가 날아가요.' : '바람이 매우 세서 빨래가 날아가고 나뭇가지가 부러져요. 걷기도 힘들어요.') + depthNote(w);
+    if (w.spd>=9) return '바람이 강해 나무 전체가 흔들리고 나뭇잎이 날려요. 우산을 쓰기 힘들어요.' + depthNote(w);
+    return '바람이 알맞게 불어 빨래가 펄럭이고 종이가 날려요.' + depthNote(w);
+  }
+  function autoCaption(w){
+    if (w.spd>=14) return windCap(w);
+    if (w.rain>0 && w.temp<=0) return w.rain>=3 ? '눈이 펑펑 와요. 눈사람을 만들 수 있지만 길이 미끄러워요.' : '눈이 조금 내려요. 목도리와 장갑을 챙겨요.';
+    if (w.rain>=20) return '비가 아주 많이 와요. 물이 불어난 곳에는 가지 않아요.';
+    if (w.rain>0) return w.spd>=9 ? '비바람이 강해 우산을 쓰기 힘들어요.' : '비가 와서 우산을 쓰고 장화를 신었어요.';
+    if (w.spd>=9) return windCap(w);
+    if (w.temp>=33) return '무척 더워요. 그늘에서 쉬고 물을 자주 마셔요.';
+    if (w.temp<=-5) return '몹시 추워요. 입김이 하얗게 나와요.';
+    if (w.hum>=80) return '습도가 높아 끈적끈적해요. 빨래가 잘 마르지 않아요.';
+    if (w.spd>=5) return windCap(w);
+    if (w.hum<=45 && w.cloud<=1) return '습도가 낮고 맑아요. 빨래가 잘 말라요.';
+    if (w.cloud<=1 && w.temp>=15 && w.temp<=28) return '산책하기 좋은 날이에요.';
+    if (w.cloud===3) return '하늘이 흐려 햇볕이 약해요.';
+    if (w.temp<10) return '쌀쌀해서 외투를 입었어요.';
+    return '기상 요소를 바꿔 날씨를 만들어 보세요.';
+  }
+  function kiteCaption(w){
+    if (w.rain>0) return '비가 와서 연을 날릴 수 없어요.';
+    if (w.spd<3) return '바람이 약해 연이 뜨지 않아요.';
+    if (w.spd>8) return '바람이 너무 세서 연줄이 끊어질 것 같아요.';
+    var x=vec().x;
+    if (x>0.2) return '연이 동쪽으로 날아가요.';
+    if (x<-0.2) return '앗, 연이 서쪽으로 날아가요.';
+    return w.dir==='북' ? '연이 우리 쪽(남쪽)으로 날아와요. 강가는 동쪽에 있어요.' : '연이 먼 산 쪽(북쪽)으로 날아가요. 강가는 동쪽에 있어요.';
+  }
+
+  /* ---------- instrument guide ---------- */
+  var QUEST = ['compass','wsock','thermo','gauge'];
+  var INFO = {
+    compass:{name:'나침반', at:[56,128], text:'동서남북 방위를 알려 줘요. 초록 화살표는 바람이 불어 가는 쪽을 가리켜요.',
+      now:function(w){ return w.spd===0 ? '지금은 바람이 없어요.' : '지금: '+w.dir+'풍 ('+w.dir+'쪽에서 불어와요)'; }},
+    ground:{name:'방위판', at:[66,358], text:'그림 속 먼 산 쪽이 북쪽, 앞쪽이 남쪽, 왼쪽이 서쪽, 오른쪽이 동쪽이에요.',
+      now:function(w){ return w.spd===0 ? '지금은 바람이 없어요.' : '지금 바람은 '+OPP[w.dir]+'쪽으로 불어 가요.'; }},
+    wsock:{name:'바람자루', at:[574,176], text:'바람이 불어 가는 쪽으로 날려요. 바람이 셀수록 곧게 펴져요.',
+      now:function(w){ return w.spd===0 ? '지금은 축 늘어져 있어요.' : '지금: '+OPP[w.dir]+'쪽으로 날려요 ('+spdWord(w.spd)+')'; }},
+    anemo:{name:'풍속계', at:[592,154], text:'바람의 빠르기(풍속)를 재요. 컵이 빨리 돌수록 바람이 세요.',
+      now:function(w){ return '지금: '+w.spd+' m/s ('+spdWord(w.spd)+')'; }},
+    thermo:{name:'온도계', at:[561,242], text:'기온을 재요. 빨간 기둥이 높을수록 기온이 높아요.',
+      now:function(w){ return '지금: '+w.temp+' ℃'; }},
+    gauge:{name:'우량계', at:[612,302], text:'비나 눈이 내린 양(강수량)을 재요. 눈은 녹여서 물의 양으로 재요.',
+      now:function(w){ return '지금: '+w.rain+' mm'; }},
+    screen:{name:'백엽상', at:[526,256], text:'햇빛을 가리고 바람이 잘 통하는 흰 상자예요. 안에서 기온과 습도를 재요.',
+      now:function(w){ return '지금: 기온 '+w.temp+' ℃, 습도 '+w.hum+' %'; }}
+  };
+  var bubbleTimer=null, questTimer=null, openKey=null;
+  function syncGuide(){
+    $$('.badge', E.badges).forEach(function(b){ b.style.display = P.inst.indexOf(b.dataset.info)>=0 ? 'none' : ''; });
+    $$('[data-tag]', E.tags).forEach(function(t){ t.style.opacity = P.inst.indexOf(t.dataset.tag)>=0 ? 1 : 0; });
+    var n = QUEST.filter(function(k){ return P.inst.indexOf(k)>=0; }).length;
+    if (O.neutral || n>=QUEST.length && !questTimer){ quest.hidden=true; return; }
+    if (n<QUEST.length){
+      quest.hidden=false;
+      quest.innerHTML='<span class="q-badge">?</span><span class="q-long">그림 속 <b>?</b>를 눌러 관측 기구를 알아보세요</span><span class="q-short"><b>?</b>를 눌러 관측 기구 알아보기</span><span class="q-dots">'+QUEST.map(function(k){ return '<i class="'+(P.inst.indexOf(k)>=0?'on':'')+'"></i>'; }).join('')+'</span>';
+    }
+  }
+  function placeBubble(key){
+    var a=INFO[key].at, rect=scene.getBoundingClientRect(), sx=rect.width/640, sy=rect.height/420;
+    var bw=bubble.offsetWidth, bh=bubble.offsetHeight, ax=a[0]*sx, ay=a[1]*sy;
+    var below = a[1] < 170;
+    var left = clamp(ax-bw/2, 8, rect.width-bw-8), top = below ? ay+12 : ay-bh-12;
+    top = clamp(top, 6, rect.height-bh-6);
+    bubble.style.left=left+'px'; bubble.style.top=top+'px';
+    bubble.style.setProperty('--ax', clamp(ax-left, 16, bw-16)+'px');
+    bubble.classList.toggle('below', below);
+  }
+  function showInfo(key){
+    var I=INFO[key]; clearTimeout(bubbleTimer); openKey=key;
+    $('#bName').textContent=I.name; $('#bText').textContent=I.text;
+    $('#bNow').textContent = O.neutral ? '예보를 확인하고 하루를 보내면 볼 수 있어요.' : I.now(W);
+    bubble.hidden=false; placeBubble(key);
+    bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop');
+    bubbleTimer=setTimeout(hideInfo, 7000);
+    if (P.inst.indexOf(key)<0){
+      P.inst.push(key); save();
+      var done = QUEST.every(function(k){ return P.inst.indexOf(k)>=0; });
+      if (done && QUEST.indexOf(key)>=0){
+        quest.hidden=false; quest.innerHTML='<span class="q-badge ok">✓</span><span>관측 기구를 모두 찾았어요!</span>';
+        questTimer=setTimeout(function(){ questTimer=null; syncGuide(); }, 3500);
+      }
+      syncGuide();
+    }
+  }
+  function hideInfo(){ bubble.hidden=true; openKey=null; clearTimeout(bubbleTimer); }
+  $('#bClose').addEventListener('click', hideInfo);
+  document.addEventListener('pointerdown', function(e){ if (!bubble.hidden && !bubble.contains(e.target) && !e.target.closest('.inst, .badge')) hideInfo(); });
+  window.addEventListener('resize', function(){ if (openKey) placeBubble(openKey); });
+  $$('.inst, .badge', svg).forEach(function(g){
+    g.addEventListener('click', function(e){ e.stopPropagation(); showInfo(g.dataset.info); });
+    g.addEventListener('keydown', function(e){ if (e.key==='Enter' || e.key===' '){ e.preventDefault(); showInfo(g.dataset.info); } });
+  });
+  $$('.badge', svg).forEach(function(b){ b.setAttribute('tabindex','0'); b.setAttribute('role','button'); b.setAttribute('aria-label', INFO[b.dataset.info].name+' 알아보기'); });
+
+  /* ---------- sky and clouds ---------- */
+  function sky(){
+    if (O.neutral) return ['#AEBAC6','#CCD5DD','#E7EBEF'];
+    var w=W;
+    if (w.rain>0){ if (w.temp<=0) return ['#8591A0','#ADB7C3','#D9DFE6']; return w.cloud>=3?['#4E5A68','#6E7A88','#9AA5B1']:['#61728A','#8795A6','#B6C0CB']; }
+    return [ w.temp>=33?['#2F7FD6','#7DB9EC','#F5DDB0']:['#2F7FD6','#74B4EB','#D4ECFA'], ['#3F88D3','#86BDEB','#D6EBF7'], ['#6C92B9','#9CB8D2','#D3DFE9'], ['#788493','#98A3AF','#C4CBD2'] ][w.cloud];
+  }
+  var SHAPE_A='<rect x="-6" y="-6" width="80" height="26" rx="13"/><circle cx="8" cy="-2" r="18"/><circle cx="30" cy="-16" r="24"/><circle cx="54" cy="-10" r="19"/><circle cx="68" cy="2" r="14"/>';
+  var SHAPE_B='<rect x="0" y="-4" width="46" height="18" rx="9"/><circle cx="10" cy="0" r="12"/><circle cx="24" cy="-10" r="15"/><circle cx="38" cy="-2" r="11"/>';
+  function buildClouds(){
+    var n=!!O.neutral, w=W;
+    var lv = n?0:w.cloud, tone = n?'n':(w.rain>0?(w.temp<=0?'s':'r'):'d');
+    var key = lv+tone; if (key===cloudKey) return; cloudKey=key;
+    E.clouds.innerHTML=''; clouds=[];
+    if (lv===0) return;
+    var fill = tone==='d' ? (lv===3?'url(#cgO)':'url(#cgD)') : tone==='s' ? 'url(#cgS)' : (lv===3?'url(#cgR)':'url(#cgG)');
+    var L;
+    if (lv===1) L=[['A',70,96,.75],['B',330,62,.9]];
+    else if (lv===2) L=[['A',10,104,1.05],['B',185,70,1.1],['A',330,112,.9],['A',470,74,1.05],['B',640,108,1]];
+    else {
+      mk('rect',{width:640,height:76,fill: tone==='d'?'url(#bandO)':tone==='s'?'url(#bandS)':'url(#bandR)'},E.clouds);
+      L=[]; for (var i=0;i<9;i++) L.push(['A', i*89-20, 84+(i%2)*14, 1.3]);
+    }
+    L.forEach(function(c){ var g=mk('g',{fill:fill},E.clouds); g.innerHTML = c[0]==='A'?SHAPE_A:SHAPE_B; clouds.push({el:g, bx:c[1], y:c[2], s:c[3]}); });
+  }
+  function buildDrops(){
+    var n=!!O.neutral, w=W;
+    var kind = (n||w.rain===0) ? '' : (w.temp<=0?'snow':'rain');
+    var count = kind==='rain' ? Math.min(180, 14+w.rain*6) : kind==='snow' ? Math.min(160, 16+w.rain*6) : 0;
+    if (kind!==dropKind){ E.precip.innerHTML=''; drops=[]; dropKind=kind; }
+    while (drops.length<count){
+      var near = Math.random()<.6, el;
+      if (kind==='rain') el=mk('line',{stroke:near?'#EEF4FB':'#DCE6F2','stroke-width':near?'1.9':'1.1','stroke-linecap':'round',opacity:near?(.7+Math.random()*.25).toFixed(2):'.45'},E.precip);
+      else el=near ? mk('circle',{r:f1(2.8+Math.random()*1.8),fill:'#FFFFFF',stroke:'#BFCCDB','stroke-width':'.7',opacity:'.95'},E.precip) : mk('circle',{r:f1(1.5+Math.random()*1),fill:'#FFFFFF',opacity:'.8'},E.precip);
+      drops.push({el:el, near:near, x:Math.random()*720-40, y:Math.random()*450-30,
+        v: kind==='rain' ? (near?560:400)+Math.random()*220 : (near?80:48)+Math.random()*40, p:Math.random()*6.28, len: near?16:10});
+    }
+    while (drops.length>count) drops.pop().el.remove();
+  }
+  function arrowPath(x1,y1,x2,y2,col,w,head){
+    var dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L, px=-uy, py=ux, hx=x2-ux*head, hy=y2-uy*head;
+    return '<path d="M'+f1(x1)+' '+f1(y1)+'L'+f1(hx)+' '+f1(hy)+'" stroke="'+col+'" stroke-width="'+w+'" stroke-linecap="round" class="flow"/>'+
+      '<path d="M'+f1(x2+ux*1.5)+' '+f1(y2+uy*1.5)+'L'+f1(hx+px*head*.8)+' '+f1(hy+py*head*.8)+'L'+f1(hx-px*head*.8)+' '+f1(hy-py*head*.8)+'Z" fill="'+col+'" stroke="'+col+'" stroke-width="1" stroke-linejoin="round"/>';
+  }
+  function compass(){
+    var label, show=false;
+    if (O.neutral) label='바람 ?';
+    else if (W.spd===0) label='바람 없음';
+    else { label=W.dir+'풍'; show=true; }
+    if (show){
+      var a=DIRS.indexOf(W.dir)*Math.PI/4, r=15;
+      var fx=r*Math.sin(a), fy=-r*Math.cos(a), tx=-fx, ty=-fy;
+      var ux=(tx-fx)/(2*r), uy=(ty-fy)/(2*r), px=-uy, py=ux, hx=tx-ux*8, hy=ty-uy*8, t1x=fx+ux*4, t1y=fy+uy*4;
+      E.cArrow.innerHTML='<path d="M'+f1(fx)+' '+f1(fy)+'L'+f1(hx)+' '+f1(hy)+'" stroke="#13A388" stroke-width="3.6" stroke-linecap="round"/>'+
+        '<path d="M'+f1(fx)+' '+f1(fy)+'l'+f1(-ux*4+px*4.5)+' '+f1(-uy*4+py*4.5)+'M'+f1(fx)+' '+f1(fy)+'l'+f1(-ux*4-px*4.5)+' '+f1(-uy*4-py*4.5)+'M'+f1(t1x)+' '+f1(t1y)+'l'+f1(-ux*4+px*4.5)+' '+f1(-uy*4+py*4.5)+'M'+f1(t1x)+' '+f1(t1y)+'l'+f1(-ux*4-px*4.5)+' '+f1(-uy*4-py*4.5)+'" stroke="#13A388" stroke-width="2" stroke-linecap="round"/>'+
+        '<path d="M'+f1(tx+ux*2)+' '+f1(ty+uy*2)+'L'+f1(hx+px*6.5)+' '+f1(hy+py*6.5)+'L'+f1(hx-px*6.5)+' '+f1(hy-py*6.5)+'Z" fill="#13A388" stroke="#13A388" stroke-width="1" stroke-linejoin="round"/>';
+      var v=vec(), gx=v.x*31, gy=-v.y*11.5;
+      E.gArrow.innerHTML = arrowPath(66-gx, 386-gy, 66+gx, 386+gy, '#13A388', 3.4, 7);
+    } else { E.cArrow.innerHTML=''; E.gArrow.innerHTML='<circle cx="66" cy="386" r="2.6" fill="#9AA7B5"/>'; }
+    E.cLabel.textContent=label;
+    var wd=18+label.length*13; E.cLabelBg.setAttribute('x',-wd/2); E.cLabelBg.setAttribute('width',wd);
+    E.cLabelBg.setAttribute('fill', show?'#13A388':'#6B7785');
+  }
+
+  /* ---------- the kid ---------- */
+  function kidSVG(k, R, kite, hatGone){
+    var o=k.outfit, it=k.items, OL='#2A3547', skin='#F6CFA9', hair='#3A2A22';
+    var umb=it.has('umbrella'), flip=!!(R && R.flip), scarf=it.has('scarf'), shades=it.has('hat'), hat=shades && !hatGone;
+    var n=!!O.neutral, s=speed(), v=vec();
+    var depth = (!n && s>=2 && Math.abs(v.x)<.3) ? (v.y>0?'away':'toward') : null;
+    var lean = (!n && s>=11 && Math.abs(v.x)>=.3) ? -v.x*Math.min(12,(s-10)*2.2) : 0;
+    var strain = !n && s>=14 && (K.auto || !!R);
+    var LH = kite ? [246,292] : [247,321], RH = umb ? [292,302] : [289,321];
+    var pants = o==='short' ? '#3E5C8A' : '#34495E';
+    var top = {short:'#FFC53D', long:'#2E9C8A', coat:'#2F5E91'}[o];
+    var boots = (K.auto && !n && W.rain>0) ? (W.temp<=0?'winter':'rain') : null;
+    var cold = !n && W.temp<=3;
+    var p='<ellipse class="shadow" cx="268" cy="353.5" rx="27" ry="5" fill="#1E3350"/><g transform="rotate('+f1(lean)+' 268 352)">';
+    var lw=' stroke="'+OL+'" stroke-width="1.3" stroke-linejoin="round"';
+    var tail='<path d="M273.5 289 h8 l1.5 16 h-9z" fill="#C9432C" stroke="'+OL+'" stroke-width="1.1" stroke-linejoin="round"/><path d="M274.5 305 v3.2 M277.5 305 v3.2 M280.5 305 v3.2" stroke="#C9432C" stroke-width="1.3" stroke-linecap="round"/>';
+    if (scarf && depth==='away') p+='<g transform="rotate('+(-128-Math.min(s,15))+' 277 290)"><g class="tail">'+tail+'</g></g>';
+    if (o==='short'){
+      p+='<rect x="257" y="326" width="7.5" height="24" rx="3.5" fill="'+skin+'"'+lw+'/><rect x="271.5" y="326" width="7.5" height="24" rx="3.5" fill="'+skin+'"'+lw+'/>';
+      p+='<path d="M253 314 H283 L284.5 331 Q277 333 270.5 331 L268 322 L265.5 331 Q259 333 251.5 331Z" fill="'+pants+'"'+lw+'/>';
+    } else if (o==='long'){
+      p+='<rect x="255.5" y="314" width="10.5" height="37" rx="4.5" fill="'+pants+'"'+lw+'/><rect x="270" y="314" width="10.5" height="37" rx="4.5" fill="'+pants+'"'+lw+'/>';
+    } else {
+      p+='<rect x="256" y="322" width="10" height="29" rx="4.5" fill="'+pants+'"'+lw+'/><rect x="270" y="322" width="10" height="29" rx="4.5" fill="'+pants+'"'+lw+'/>';
+    }
+    if (boots==='rain'){
+      p+='<path d="M254 336 h11 v15.5 q0 2 -2 2 h-11.5 q-2 0 -2 -2 q0 -3 3 -3 h1.5z" fill="#FFC53D"'+lw+'/><path d="M269 336 h11 v15.5 q0 2 -2 2 h-11.5 q-2 0 -2 -2 q0 -3 3 -3 h1.5z" fill="#FFC53D"'+lw+'/>';
+    } else if (boots==='winter'){
+      p+='<path d="M253.5 339 h12.5 v12.5 q0 2 -2 2 h-12 q-2 0 -2 -2 q0 -3 3 -3 h.5z" fill="#8A5A3C"'+lw+'/><path d="M269 339 h12.5 v12.5 q0 2 -2 2 h-12 q-2 0 -2 -2 q0 -3 3 -3 h.5z" fill="#8A5A3C"'+lw+'/><rect x="252.5" y="336.5" width="14.5" height="5" rx="2.5" fill="#F3E6D0"'+lw+'/><rect x="268" y="336.5" width="14.5" height="5" rx="2.5" fill="#F3E6D0"'+lw+'/>';
+    } else {
+      p+='<path d="M252 350.5 q0 -4 4 -4 h7.5 q3 0 4 3 l.8 2.8 q.3 1.4 -1.2 1.4 h-13.6 q-1.5 0 -1.5 -1.5z" fill="#FFFFFF"'+lw+'/><path d="M267 350.5 q0 -4 4 -4 h7.5 q3 0 4 3 l.8 2.8 q.3 1.4 -1.2 1.4 h-13.6 q-1.5 0 -1.5 -1.5z" fill="#FFFFFF"'+lw+'/><path d="M253 351.8h14M268 351.8h14" stroke="#E2553B" stroke-width="1.5"/>';
+    }
+    p+='<rect x="263" y="276" width="10" height="10" rx="3" fill="#EDB98F"/>';
+    if (o==='coat'){
+      p+='<path d="M251 289 Q268 280 285 289 L288.5 331 Q268 337 247.5 331Z" fill="'+top+'"'+lw+'/>';
+      p+='<path d="M250 302 Q268 306 286 302 M249 316 Q268 320 287 316" stroke="#FFFFFF" stroke-opacity=".28" stroke-width="1.6" fill="none"/><path d="M268 286 V334" stroke="#FFC53D" stroke-width="1.7"/>';
+      p+='<path d="M255 288 Q268 297 281 288 Q276 282.5 268 283 Q260 282.5 255 288Z" fill="#F3E6D0" stroke="'+OL+'" stroke-width="1.1"/>';
+    } else {
+      p+='<path d="M254 290 Q268 283 282 290 L284 318 Q268 322 252 318Z" fill="'+top+'"'+lw+'/>';
+      p+='<path d="M254.5 293 Q256 305 253.5 317 L258 318 Q259.5 304 258 291.5Z" fill="#FFFFFF" opacity=".22"/>';
+      if (o==='long') p+='<path d="M254 300.5 H282.3 M253.4 309.5 H283" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="3"/>';
+      else p+='<path d="M268 297l1.4 2.9 3.2.4-2.3 2.2.6 3.2-2.9-1.6-2.9 1.6.6-3.2-2.3-2.2 3.2-.4z" fill="#FFFFFF" opacity=".9"/>';
+      p+='<path d="M262 287.2 Q268 292.5 274 287.2" stroke="'+OL+'" stroke-width="1.2" fill="none"/>';
+    }
+    if (R && R.wet) p+='<path d="M254 290 Q268 283 282 290 L284 318 Q268 322 252 318Z" fill="#3A7FD5" opacity=".2"/>';
+    function arm(a,b){
+      var q='<path d="M'+a[0]+' '+a[1]+' L'+b[0]+' '+b[1]+'" stroke="'+OL+'" stroke-width="9.6" stroke-linecap="round"/>';
+      q+='<path d="M'+a[0]+' '+a[1]+' L'+b[0]+' '+b[1]+'" stroke="'+(o==='short'?skin:top)+'" stroke-width="7" stroke-linecap="round"/>';
+      if (o==='short'){ var m=[f1(a[0]+(b[0]-a[0])*.34), f1(a[1]+(b[1]-a[1])*.34)]; q+='<path d="M'+a[0]+' '+a[1]+' L'+m[0]+' '+m[1]+'" stroke="'+OL+'" stroke-width="11.4" stroke-linecap="round"/><path d="M'+a[0]+' '+a[1]+' L'+m[0]+' '+m[1]+'" stroke="'+top+'" stroke-width="9" stroke-linecap="round"/>'; }
+      if (o==='long'){ var c=[f1(a[0]+(b[0]-a[0])*.82), f1(a[1]+(b[1]-a[1])*.82)]; q+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="3.2" fill="#FFFFFF" opacity=".5"/>'; }
+      return q;
+    }
+    p+=arm([256,292],LH)+arm([280,292],RH);
+    [LH,RH].forEach(function(h){ p+='<circle cx="'+h[0]+'" cy="'+h[1]+'" r="4.6" fill="'+(scarf?'#E2553B':skin)+'" stroke="'+OL+'" stroke-width="1.1"/>'; if (scarf) p+='<path d="M'+(h[0]-3.6)+' '+(h[1]-2.6)+' q3.6 -2 7.2 0" stroke="#FFFFFF" stroke-width="1.6" fill="none"/>'; });
+    if (scarf){
+      if (depth==='toward') p+='<g transform="translate(277 290) scale(1.25 .62) translate(-277 -290)"><g class="tail">'+tail+'</g></g>';
+      else if (depth!=='away'){ var ta = n ? 0 : clamp(-v.x*Math.min(s,15)*5.5, -80, 80); p+='<g transform="rotate('+f1(ta)+' 277 290)"><g class="tail">'+tail+'</g></g>'; }
+      p+='<path d="M253 282 Q268 291.5 283 282 L284 289.5 Q268 298.5 252 289.5Z" fill="#E2553B" stroke="'+OL+'" stroke-width="1.1" stroke-linejoin="round"/><path d="M258.5 285.8v6 M264 287.4v6.4 M272 287.4v6.4 M277.5 285.8v6" stroke="#FFFFFF" stroke-width="1.5" opacity=".5"/>';
+    }
+    p+='<circle cx="251.5" cy="264" r="4.6" fill="'+skin+'" stroke="'+OL+'" stroke-width="1.1"/><circle cx="284.5" cy="264" r="4.6" fill="'+skin+'" stroke="'+OL+'" stroke-width="1.1"/>';
+    if (!hat && depth==='away') p+='<path d="M268.5 239 q-2 -9 5 -13" stroke="'+hair+'" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M259 240 q-3 -7 1 -11" stroke="'+hair+'" stroke-width="2.6" stroke-linecap="round" fill="none"/>';
+    p+='<circle cx="268" cy="262" r="17" fill="'+skin+'" stroke="'+OL+'" stroke-width="1.3"/>';
+    if (!hat){
+      p+='<path d="M251 262 C249 243 259 236 269 236 C281 236 288 245 286 261 C283 254 279 250 273 249 C269 255 261 256 255 253 C253 256 252 259 251 262Z" fill="'+hair+'" stroke="'+OL+'" stroke-width="1" stroke-linejoin="round"/>';
+      if (depth==='toward') p+='<path d="M263 247 q5 6 1 13 M271 248 q3 5 -1 10" stroke="'+hair+'" stroke-width="2.6" stroke-linecap="round" fill="none"/>';
+      else if (depth!=='away'){ var tu = n?0:clamp(v.x*Math.min(s,18)*3,-65,65); p+='<path d="M268.5 237 q3 -7 10 -6" stroke="'+hair+'" stroke-width="3" stroke-linecap="round" fill="none" transform="rotate('+f1(tu)+' 268.5 237)"/>'; }
+    }
+    var sad = R && ((R.hot && o!=='short') || R.cold || R.wet);
+    var chill = R && R.cold;
+    if (strain) p+='<path d="M258.5 254.2 q3 2.2 6 1.6 M271.5 255.8 q3 .6 6 -1.6" stroke="'+OL+'" stroke-width="1.5" fill="none" stroke-linecap="round"/>';
+    else p+= sad ? '<path d="M258.5 256.2 q3 .2 6 -2 M271.5 254.2 q3 2.2 6 2" stroke="'+OL+'" stroke-width="1.4" fill="none" stroke-linecap="round"/>'
+                 : '<path d="M258.5 255.5 q3 -2 6 0 M271.5 255.5 q3 -2 6 0" stroke="'+OL+'" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
+    if (shades){
+      p+='<path d="M256.5 261 h9.5 v4.6 q0 3.2 -4.75 3.2 q-4.75 0 -4.75 -3.2z M270 261 h9.5 v4.6 q0 3.2 -4.75 3.2 q-4.75 0 -4.75 -3.2z" fill="#1E2A38"/><path d="M266 262.6h4" stroke="#1E2A38" stroke-width="1.5"/><path d="M258.3 264.8l2.6 -1.8 M271.8 264.8l2.6 -1.8" stroke="#FFFFFF" stroke-width="1.1" stroke-linecap="round" opacity=".7"/>';
+    } else if (strain){
+      p+='<path d="M258.5 262 l4.5 2.4 -4.5 2.4 M277.5 262 l-4.5 2.4 4.5 2.4" stroke="#263241" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+    } else {
+      p+='<ellipse cx="261.3" cy="264.2" rx="2.3" ry="2.9" fill="#263241"/><ellipse cx="274.7" cy="264.2" rx="2.3" ry="2.9" fill="#263241"/><circle cx="262.1" cy="263.1" r=".9" fill="#FFFFFF"/><circle cx="275.5" cy="263.1" r=".9" fill="#FFFFFF"/>';
+    }
+    var hotCheek = chill || (R&&R.hot) || strain;
+    p+='<ellipse cx="256.5" cy="270.5" rx="3.4" ry="2.1" fill="#F59C95" opacity="'+(hotCheek?'.95':'.55')+'"/><ellipse cx="279.5" cy="270.5" rx="3.4" ry="2.1" fill="#F59C95" opacity="'+(hotCheek?'.95':'.55')+'"/>';
+    if (strain) p+='<rect x="262.5" y="271" width="11" height="4.2" rx="1.6" fill="#FFFFFF" stroke="#7A3B2E" stroke-width="1.2"/><path d="M266.2 271v4.2M269.8 271v4.2" stroke="#C9B6AE" stroke-width=".8"/>';
+    else if (chill) p+='<path d="M262.5 273.2 l2 -1.6 l2 1.6 l2 -1.6 l2 1.6 l2 -1.6 l1.5 1.2" stroke="#7A3B2E" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+    else if (sad) p+='<path d="M263.5 274.5 Q268 271 272.5 274.5" stroke="#7A3B2E" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
+    else p+='<path d="M263 271 Q268 276.2 273 271 Q268 273 263 271Z" fill="#7A3B2E" stroke="#7A3B2E" stroke-width="1.2" stroke-linejoin="round"/>';
+    if (hat){
+      p+='<path d="M252.5 250.5 Q253.5 235 268 234 Q282.5 235 283.5 250.5Z" fill="#FFC53D" stroke="'+OL+'" stroke-width="1.2"/><path d="M252.8 246 H283.2 V250.3 H252.8Z" fill="#E2553B"/>';
+      p+='<ellipse cx="268" cy="251.2" rx="22.5" ry="5" fill="#FFD45C" stroke="'+OL+'" stroke-width="1.2"/>';
+    } else if (shades){
+      p+='<path d="M251 262 C249 243 259 236 269 236 C281 236 288 245 286 261 C283 254 279 250 273 249 C269 255 261 256 255 253 C253 256 252 259 251 262Z" fill="'+hair+'" stroke="'+OL+'" stroke-width="1" stroke-linejoin="round"/>';
+    }
+    if (it.has('water') && !kite) p+='<rect x="241" y="312" width="9.5" height="17.5" rx="3.4" fill="#E8F3FD" stroke="'+OL+'" stroke-width="1.1"/><rect x="241.6" y="318" width="8.3" height="11" rx="2.6" fill="url(#iDrop)"/><rect x="242.5" y="307.6" width="6.5" height="5" rx="1.2" fill="#2F5E91" stroke="'+OL+'" stroke-width="1"/>';
+    if (umb){
+      var tilt = (!n && s>=9 && !flip) ? -v.x*Math.min(22,(s-8)*4) : 0;
+      p+='<path d="M292 302 v7 q0 6 -6 6 q-5 0 -5 -5" stroke="#8A5A3C" stroke-width="2.6" fill="none" stroke-linecap="round"/>';
+      p+='<g transform="rotate('+f1(tilt)+' 292 302)"><g class="'+((!n && s>=9)?'shake':'')+'">';
+      if (!flip){
+        p+='<path d="M292 302 V222" stroke="#5A4632" stroke-width="2.2"/>';
+        p+='<path d="M254 228 C254 204 272 190 292 189 C312 190 330 204 330 228 Q320.5 221 311 228 Q301.5 221 292 228 Q282.5 221 273 228 Q263.5 221 254 228Z" fill="#FFC53D" stroke="'+OL+'" stroke-width="1.3" stroke-linejoin="round"/>';
+        p+='<path d="M292 189 C282 196 274 210 273 228 Q282.5 221 292 228Z M292 189 C312 190 330 204 330 228 Q320.5 221 311 228 C312 210 305 196 292 189Z" fill="#FFE08A"/>';
+        p+='<path d="M292 189 C282 196 274 210 273 228 M292 189 V228 M292 189 C302 196 310 210 311 228" stroke="#D69E1E" stroke-width="1" fill="none"/><path d="M292 189 v-6" stroke="'+OL+'" stroke-width="1.8" stroke-linecap="round"/>';
+      } else {
+        p+='<path d="M292 302 V236" stroke="#5A4632" stroke-width="2.2"/>';
+        p+='<path d="M258 196 C262 224 276 236 292 236 C308 236 322 224 326 196 Q317 204 309 199 Q300 207 292 201 Q284 207 275 199 Q267 204 258 196Z" fill="#FFC53D" stroke="'+OL+'" stroke-width="1.3" stroke-linejoin="round"/>';
+        p+='<path d="M292 236 L275 199 M292 236 V201 M292 236 L309 199" stroke="#D69E1E" stroke-width="1" fill="none"/>';
+      }
+      p+='</g></g>';
+    }
+    if (R){
+      if (R.hot) p+='<g class="sweat"><path d="M287.5 247 q3 5 0 8 q-3 -3 0 -8z" fill="#8CC8F4" stroke="#3A7FD5" stroke-width=".8"/></g><g class="sweat s2"><path d="M248.5 254 q2.6 4.4 0 7 q-2.6 -2.6 0 -7z" fill="#8CC8F4" stroke="#3A7FD5" stroke-width=".8"/></g>';
+      if (R.cold) p+='<g stroke="#3A7FD5" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M239 278 l-4 3 4 3 -4 3 4 3"/><path d="M297 278 l4 3 -4 3 4 3 -4 3"/></g>';
+      if (R.wet) p+='<g fill="#3A7FD5"><path d="M258 239 q2.6 4 0 6.5 q-2.6 -2.5 0 -6.5z"/><path d="M271 235 q2.6 4 0 6.5 q-2.6 -2.5 0 -6.5z"/><path d="M283 283 q2.6 4 0 6.5 q-2.6 -2.5 0 -6.5z"/><path d="M251 290 q2.6 4 0 6.5 q-2.6 -2.5 0 -6.5z"/></g>';
+    }
+    if (cold) p+='<g class="breath"><circle cx="287" cy="272" r="3.2" fill="#FFFFFF"/><circle cx="292.5" cy="269" r="4.2" fill="#FFFFFF"/><circle cx="299" cy="266.5" r="3.2" fill="#FFFFFF"/></g>';
+    return p+'</g>';
+  }
+  function drawKid(){ if (kidArgs) E.kid.innerHTML = kidSVG(kidArgs.k, kidArgs.R, kidArgs.kite, HANG.hat.st!=='on'); }
+  function drawKite(){
+    if (!O.kite){ E.kite.innerHTML=''; return; }
+    var v=vec(), s=W.spd, hx=246, hy=292, fly = s>=3 && W.rain===0;
+    var kx, ky, rot, sc=1;
+    if (fly){
+      var side=Math.abs(v.x)<.2, reach=clamp(80+s*14,90,260);
+      kx = side ? hx+10 : clamp(hx+v.x*reach, 26, 600);
+      ky = clamp(186-s*11, 58, 168); rot = side?0:v.x*18;
+      if (side){ sc = v.y>0 ? .45 : 1.35; ky = v.y>0 ? clamp(200-s*8,150,190) : clamp(170-s*6,90,160); }
+    } else { kx=224; ky=338; rot=80; }
+    var line = fly ? '<path d="M'+hx+' '+hy+'Q'+f1((hx+kx)/2)+' '+f1(Math.max(hy,ky)+14)+' '+f1(kx)+' '+f1(ky+18*sc)+'" stroke="#3B4756" stroke-width="1.1" fill="none" opacity=".85"/>'
+                   : '<path d="M'+hx+' '+hy+'Q'+(hx-10)+' '+(hy+32)+' '+kx+' '+ky+'" stroke="#3B4756" stroke-width="1.1" fill="none"/>';
+    E.kite.innerHTML = line + '<g transform="translate('+f1(kx)+' '+f1(ky)+') rotate('+f1(rot)+') scale('+sc+')"><path d="M0 20 q-7 9 0 16 q7 7 0 15" stroke="#2A3547" stroke-width="1.3" fill="none"/><path d="M0 29 l-5.5 -3.2 v6.4z M0 29 l5.5 -3.2 v6.4z M0 43 l-5 -3 v6z M0 43 l5 -3 v6z" fill="#13A388"/><path d="M0 -18 L13 0 L0 20 L-13 0Z" fill="#E2553B" stroke="#2A3547" stroke-width="1.4" stroke-linejoin="round"/><path d="M0 -18 L13 0 L0 0Z M0 0 L-13 0 L0 20Z" fill="#FFC53D"/><path d="M0 -18 V20 M-13 0 H13" stroke="#2A3547" stroke-width="1"/></g>';
+  }
+
+  /* ---------- motion helpers ---------- */
+  /* move a point with the wind: sideways drift + perspective flow toward/away from the horizon point */
+  function flow(o, dt, v, s, lift, t){
+    var m = Math.exp(v.y*s*0.11*dt*-1);
+    o.x = VPX + (o.x-VPX)*m + v.x*s*15*dt*Math.max(.45,o.sc);
+    o.y = VPY + (o.y-VPY)*m - (lift||0)*dt*o.sc + Math.sin(t*3+o.p)*14*dt;
+    o.sc *= m; o.rot += o.vr*dt;
+  }
+  function outOf(o){ return o.x<-90 || o.x>730 || o.y>470 || o.y<-60 || o.sc<.1 || o.sc>4.2; }
+  function spawn(o, v, s, band){
+    var dz=v.y*s, hx=v.x*s, rand=Math.random();
+    if (Math.abs(dz) > Math.abs(hx)*1.2){
+      if (dz<0){ var a=rnd(0,6.28), r=rnd(20,90); o.x=VPX+Math.cos(a)*r*1.6; o.y= band==='ground' ? VPY+rnd(40,70) : VPY+Math.sin(a)*r*.6-20; o.sc=rnd(.3,.5); }
+      else { o.x=rnd(-20,660); o.y= band==='ground' ? rnd(395,420) : rnd(250,420); if (band!=='ground' && rand<.5){ o.x = rand<.25 ? -20 : 660; o.y=rnd(120,380); } o.sc=rnd(1.5,2.1); }
+    } else {
+      o.x = hx>0 ? rnd(-80,-20) : rnd(660,720); o.y = band==='ground' ? rnd(352,408) : rnd(110,330); o.sc=rnd(.8,1.25);
+    }
+    o.rot=rnd(0,360); o.p=rnd(0,6.3);
+  }
+  function fadeBy(o){ return o.sc>2.6 ? clamp((4.2-o.sc)/1.6,0,1) : o.sc<.25 ? clamp((o.sc-.1)/.15,0,1) : 1; }
+  function sockGeom(t,v,s){
+    var side = Math.abs(v.x)<.15 && s>=.5, dx = Math.abs(v.x)<.15 ? 1 : (v.x>0?1:-1), mv=RM?0:1;
+    var th = (s<.5 ? 3 : Math.min(90, 12+s*7.8)) * Math.PI/180, A = mv*(1+Math.min(3.5, s*.3)), pts=[], j;
+    var bx, by=198, ux, uy, L, r0, r1;
+    if (side){
+      bx=608.5; var lift = Math.min(1, s/10);
+      if (v.y>0){ ux=.25; uy=-.35*lift+.9*(1-lift); L=14+4*lift; r0=9; r1=4.5; }
+      else { ux=.2; uy=.55*lift+.9*(1-lift)*.5+.3; L=22; r0=8.5; r1=10.5; }
+      var nrm=Math.hypot(ux,uy); ux/=nrm; uy/=nrm;
+    } else { bx=608.5+(1-Math.sin(th))*4; ux=dx*Math.sin(th); uy=Math.cos(th); L=40; r0=8.5; r1=4.3; }
+    var nx=-uy, ny=ux;
+    for (j=0;j<=5;j++){
+      var sj=j/5, rr=r0+(r1-r0)*sj, wv=A*Math.sin(sj*5-t*(6+s*.8))*sj*(side?.5:1);
+      var px=bx+ux*L*sj+nx*wv, py=by+uy*L*sj+ny*wv;
+      pts.push([px+nx*rr, py+ny*rr, px-nx*rr, py-ny*rr, px, py, rr]);
+    }
+    for (j=0;j<5;j++){ var a=pts[j], b=pts[j+1]; stripes[j].setAttribute('d','M'+f1(a[0])+' '+f1(a[1])+'L'+f1(b[0])+' '+f1(b[1])+'L'+f1(b[2])+' '+f1(b[3])+'L'+f1(a[2])+' '+f1(a[3])+'Z'); }
+    if (side){
+      var e = v.y>0 ? pts[0] : pts[5];
+      sockMouth.setAttribute('cx',f1(e[4])); sockMouth.setAttribute('cy',f1(e[5])); sockMouth.setAttribute('rx',f1(e[6]*(v.y>0?1:.55))); sockMouth.setAttribute('ry',f1(e[6]*(v.y>0?.95:.5)));
+      sockMouth.setAttribute('opacity',1);
+    } else sockMouth.setAttribute('opacity',0);
+  }
+
+  /* ---------- per-frame motion ---------- */
+  function step(dt,t){
+    var v=vec(), s=speed(), n=!!O.neutral, w=W, mv=RM?0:1, dz=v.y*s;
+    var sideK = Math.abs(v.x), depK = Math.abs(v.y);
+    /* tree: small sway when weak, whole tree bends when strong */
+    var bend=clamp(v.x*s*1.25,-24,24), amp=Math.min(7,.3+s*.38), sw=mv*(s>0?Math.sin(t*(1.2+s*.13))*amp*(.4+sideK*.6):Math.sin(t*.8)*.25);
+    var tsy = 1 - depK*Math.min(s,18)*.0065*(1+.25*mv*Math.sin(t*(1.2+s*.13))), tsx = 1 - v.y*Math.min(s,18)*.004;
+    E.tree.setAttribute('transform','rotate('+f1(bend+sw)+' 192 345) translate(192 345) scale('+tsx.toFixed(3)+' '+tsy.toFixed(3)+') translate(-192 -345)');
+    E.tshadow.setAttribute('cy', f1(346 - v.y*Math.min(s,15)*.35));
+    /* laundry: sway → flutter → flap → blown away */
+    var hang = -v.x*Math.min(84, s*7);
+    var flap = mv*(Math.sin(t*(2.2+s*.35))*Math.min(10,.8+s*.55) + (s>=5 ? Math.sin(t*(11+s*.7))*Math.min(6,(s-4)*.6) : 0));
+    var dflut = depK>.3 ? mv*Math.sin(t*(6+s*.5))*Math.min(.1, s*.009) : 0;
+    var lsy = v.y>0 ? 1 - depK*Math.min(.5, s*.042) + dflut : 1 - depK*Math.min(.28, s*.022) + dflut;
+    var lsx = v.y>0 ? 1 - depK*Math.min(.18, s*.014) : 1 + depK*Math.min(.26, s*.021);
+    var ldy = v.y<0 ? depK*Math.min(9, s*.7) : 0;
+    E.steam.style.visibility = (HANG.shirt.st==='on' && HANG.towel.st==='on') ? '' : 'hidden';
+    E.drips.style.visibility = E.steam.style.visibility;
+    E.lshadow.setAttribute('cy', f1(348 - v.y*Math.min(s,15)*.5)); E.lshadow.setAttribute('rx', f1(66*(1 - v.y*Math.min(s,15)*.012)));
+    ['shirt','towel','socks','hat'].forEach(function(key,idx){
+      var h=HANG[key], active = !n && s>=h.thr && (key!=='hat' || (kidArgs && kidArgs.k.items.has('hat')));
+      if (active && h.st==='on'){ h.st='wait'; h.tm=h.delay; }
+      if (!active && h.st!=='on'){ h.st='on'; h.el.style.opacity=''; if (key==='hat'){ h.el.setAttribute('opacity',0); drawKid(); } }
+      if (h.st==='wait'){
+        h.tm -= RM ? 99 : dt;
+        if (h.tm<=0){
+          h.st = RM ? 'gone' : 'fly'; h.x=h.px; h.y=h.py; h.sc=1; h.rot = key==='hat'?0:hang; h.vr = rnd(160,320)*(v.x<0?-1:1); h.p=rnd(0,6);
+          if (key==='hat'){ drawKid(); h.el.setAttribute('opacity', RM?0:1); }
+        }
+      }
+      if (h.st==='fly'){
+        flow(h, dt, v, s, key==='hat'?34:26, t);
+        h.el.setAttribute('transform','translate('+f1(h.x)+' '+f1(h.y)+') rotate('+f1(h.rot)+') scale('+h.sc.toFixed(3)+')');
+        if (key==='hat') h.el.setAttribute('opacity', f1(fadeBy(h))); else h.el.style.opacity = f1(fadeBy(h));
+        if (outOf(h)){ h.st='gone'; }
+      }
+      if (h.st==='gone'){ if (key==='hat') h.el.setAttribute('opacity',0); else h.el.style.opacity=0; }
+      if (h.st==='on' || h.st==='wait'){
+        if (key==='hat') return;
+        var k = key==='shirt' ? 1 : key==='towel' ? .92 : 1.15, fk = key==='shirt' ? 1 : key==='towel' ? 1.2 : 1.5;
+        var jit = h.st==='wait' ? mv*Math.sin(t*40)*6 : 0;
+        h.el.setAttribute('transform','translate('+h.px+' '+f1(h.py+ldy)+') rotate('+f1(hang*k+flap*fk+jit)+') scale('+lsx.toFixed(3)+' '+lsy.toFixed(3)+')');
+      }
+    });
+    /* grass */
+    TUFTS.forEach(function(g,i){ var a=clamp(v.x*s*3,-48,48)+mv*Math.sin(t*(2+s*.25)+i)*Math.min(8,.8+s*.45); var sy=1-depK*Math.min(s,15)*.03; g.el.setAttribute('transform','translate('+g.x+' '+g.y+') rotate('+f1(a)+') scale(1 '+sy.toFixed(2)+')'); });
+    /* plant pot tips over in a very strong side wind */
+    var potT = (!n && s>=15 && sideK>=.3) ? (v.x>0?82:-82) : 0;
+    potAng += (potT-potAng)*(RM?1:Math.min(1,dt*5));
+    E.pot.setAttribute('transform','rotate('+f1(potAng)+' '+(potAng>=0?155:144)+' 337)');
+    /* anemometer */
+    anemoAng += s*1.15*dt*mv;
+    for (var i=0;i<3;i++){
+      var ph=anemoAng+i*2.0944, x=606.2+15*Math.cos(ph), y=165+4.2*Math.sin(ph), z=Math.sin(ph);
+      arms[i].setAttribute('x2',f1(x)); arms[i].setAttribute('y2',f1(y));
+      cups[i].setAttribute('cx',f1(x)); cups[i].setAttribute('cy',f1(y)); cups[i].setAttribute('r',f1(3.5+z*.9)); cups[i].setAttribute('fill', z>0?'#E2553B':'#B8432D');
+    }
+    sockGeom(t,v,s);
+    rayAng += dt*5*mv; E.sunRays.setAttribute('transform','rotate('+f1(rayAng%360)+')');
+    off += (6+v.x*s*2.4)*dt*mv;
+    for (i=0;i<clouds.length;i++){ var c=clouds[i]; var cx=((c.bx+off)%800+800)%800-120; c.el.setAttribute('transform','translate('+f1(cx)+' '+c.y+') scale('+c.s+')'); }
+    /* birds only on calm clear days */
+    E.birds.style.opacity = (!n && w.cloud<=1 && w.rain===0 && w.spd<8) ? 1 : 0;
+    birds.forEach(function(b){
+      b.x += (22+v.x*s*3)*dt*mv; if (b.x>700) b.x=-40; if (b.x<-60) b.x=680;
+      var fl = Math.sin(t*9+b.p)>0, by=b.y+Math.sin(t*1.3+b.p)*3;
+      b.el.setAttribute('d', fl ? 'M'+f1(b.x-7)+' '+f1(by)+'q3.5 -4.5 7 0 q3.5 -4.5 7 0' : 'M'+f1(b.x-7)+' '+f1(by-2.5)+'q3.5 2 7 2.5 q3.5 -.5 7 -2.5');
+    });
+    /* precipitation: sideways slant + perspective spread for north/south wind */
+    var d, k2, dxs;
+    if (dropKind==='rain'){
+      for (i=0;i<drops.length;i++){ d=drops[i];
+        dxs = v.x*s*34 + (d.x-VPX)*(-v.y*s)*.05;
+        if (mv){ d.y+=d.v*dt; d.x+=dxs*dt*(d.near?1:.7); }
+        if (d.y>432 || d.x<-80 || d.x>720){ d.y=-10-Math.random()*60; d.x=Math.random()*760-60-v.x*s*12; if (v.y>0 && s>3) d.x=Math.random()*640; }
+        k2=dxs/d.v;
+        d.el.setAttribute('x1',f1(d.x)); d.el.setAttribute('y1',f1(d.y)); d.el.setAttribute('x2',f1(d.x-k2*d.len)); d.el.setAttribute('y2',f1(d.y-d.len));
+      }
+    } else if (dropKind==='snow'){
+      for (i=0;i<drops.length;i++){ d=drops[i];
+        dxs = v.x*s*9 + (d.x-VPX)*(-v.y*s)*.03;
+        if (mv){ d.y+=d.v*dt; d.x+=(dxs*(d.near?1:.6)+Math.sin(t*1.4+d.p)*18)*dt; }
+        if (d.y>432 || d.x<-40 || d.x>680){ d.y=-8-Math.random()*30; d.x=Math.random()*700-30-v.x*s*5; }
+        d.el.setAttribute('cx',f1(d.x)); d.el.setAttribute('cy',f1(d.y));
+      }
+    }
+    /* raindrop ripples */
+    var raining = !n && w.rain>0 && w.temp>0 && mv;
+    ripples.forEach(function(r){
+      if (r.life<1) r.life += dt*1.8;
+      if (r.life>=1){
+        if (raining && Math.random() < (4+w.rain*.9)*dt/4){
+          r.life=0;
+          if (w.rain>=5 && Math.random()<.5){ var pd=PUD[Math.floor(Math.random()*3)]; r.x=pd[0]+(Math.random()*2-1)*pd[2]*.7; r.y=pd[1]+(Math.random()*2-1)*pd[3]*.4; }
+          else { r.x=Math.random()*640; r.y=338+Math.random()*78; }
+        } else { r.el.setAttribute('opacity',0); return; }
+      }
+      var q=r.life; r.el.setAttribute('cx',f1(r.x)); r.el.setAttribute('cy',f1(r.y)); r.el.setAttribute('rx',f1(1+q*9)); r.el.setAttribute('ry',f1(.4+q*2.6)); r.el.setAttribute('opacity',f1((1-q)*.85));
+    });
+    /* leaves: a few at 보통, many at 강함 */
+    var nLeaf = n ? 0 : s>=12 ? 8 : s>=9 ? 5 : s>=6 ? 2 : 0;
+    leaves.forEach(function(l,j){
+      if (j>=nLeaf || RM && j>=3){ l.on=false; l.el.setAttribute('opacity',0); return; }
+      if (!l.on){ spawn(l,v,s,'air'); l.on=true; if (RM){ l.x=rnd(60,580); l.y=rnd(120,320); } }
+      if (mv) flow(l, dt, v, s, 0, t+j);
+      if (outOf(l)) spawn(l,v,s,'air');
+      l.el.setAttribute('opacity', f1(.95*fadeBy(l)));
+      l.el.setAttribute('transform','translate('+f1(l.x)+' '+f1(l.y)+') rotate('+f1(l.rot%360)+') scale('+l.sc.toFixed(2)+')');
+    });
+    /* loose paper tumbling on the ground from 보통 wind; dust from 강함 on dry days */
+    var dry = w.rain===0;
+    papers.forEach(function(o,j){
+      var on = !n && s>=5 && dry && (j===0 || s>=9) && !RM;
+      if (!on){ o.on=false; o.el.setAttribute('opacity',0); return; }
+      if (!o.on){ spawn(o,v,s,'ground'); o.on=true; }
+      flow(o, dt, v, s, 0, t+j*2);
+      if (outOf(o) || o.y<VPY+20) spawn(o,v,s,'ground');
+      var bounce = Math.abs(Math.sin(t*(3+s*.15)+o.p))*Math.min(26, s*1.6)*o.sc;
+      o.el.setAttribute('opacity', f1(fadeBy(o)));
+      o.el.setAttribute('transform','translate('+f1(o.x)+' '+f1(o.y-bounce)+') rotate('+f1(o.rot%360)+') scale('+o.sc.toFixed(2)+')');
+    });
+    dusts.forEach(function(o,j){
+      var on = !n && s>=10 && dry && !RM && j < (s>=14?5:3);
+      if (!on){ o.on=false; o.el.setAttribute('opacity',0); return; }
+      if (!o.on){ spawn(o,v,s,'ground'); o.on=true; }
+      flow(o, dt, v, s, 6, t+j);
+      if (outOf(o) || o.y<VPY+20) spawn(o,v,s,'ground');
+      o.el.setAttribute('opacity', f1(.32*fadeBy(o)));
+      o.el.setAttribute('transform','translate('+f1(o.x)+' '+f1(o.y)+') scale('+f1(o.sc*(1+.3*Math.sin(t*2+o.p)))+')');
+    });
+    /* twigs break off in 매우 강함 wind */
+    twigClock += dt;
+    twigs.forEach(function(o,j){
+      var on = !n && s>=17 && !RM;
+      if (!on){ o.on=false; o.el.setAttribute('opacity',0); return; }
+      if (!o.on && twigClock > 1.2){ twigClock=0; o.on=true; o.x=rnd(168,216); o.y=rnd(214,262); o.sc=1; o.rot=rnd(0,360); o.vr=rnd(200,400); o.p=rnd(0,6); }
+      if (!o.on) return;
+      flow(o, dt, v, s, 20, t+j);
+      if (outOf(o)){ o.on=false; o.el.setAttribute('opacity',0); return; }
+      o.el.setAttribute('opacity', f1(fadeBy(o)));
+      o.el.setAttribute('transform','translate('+f1(o.x)+' '+f1(o.y)+') rotate('+f1(o.rot%360)+') scale('+o.sc.toFixed(2)+')');
+    });
+    /* sideways wind lines */
+    var nSt = (n || sideK<.15) ? 0 : s>=10 ? 6 : s>=7 ? 4 : s>=4 ? 2 : 0, dirS = v.x>0?1:-1;
+    streaks.forEach(function(st,j){
+      if (j>=nSt){ st.el.setAttribute('opacity',0); return; }
+      if (mv) st.x += dirS*s*22*st.k*dt;
+      if (st.x>720 || st.x<-120){ st.x = dirS>0 ? -100-Math.random()*80 : 700+Math.random()*80; st.y=60+Math.random()*240; }
+      var edge = clamp(Math.min(st.x+80, 640-st.x)/120, 0, 1);
+      st.el.setAttribute('opacity', f1(Math.min(.65,(s-3)*.07)*sideK*edge));
+      st.el.setAttribute('transform','translate('+f1(st.x)+' '+f1(st.y)+') scale('+dirS+' 1)');
+    });
+    /* north/south wind lines rush toward us or into the distance */
+    var nD = (n || depK<.35 || s<4) ? 0 : s>=10 ? 14 : s>=7 ? 10 : 6, rate = -dz*0.13;
+    dstreaks.forEach(function(st,j){
+      if (j>=nD){ st.el.setAttribute('opacity',0); return; }
+      if (mv) st.r *= Math.exp(rate*dt);
+      if (rate>0 && st.r>460){ st.r=rnd(28,60); st.a=rnd(0,6.28); }
+      if (rate<0 && st.r<30){ st.r=rnd(380,460); st.a=rnd(0,6.28); }
+      var r1=st.r, r2=st.r*1.34, ca=Math.cos(st.a), sa=Math.sin(st.a);
+      var x1=VPX+ca*r1*1.45, y1=VPY+sa*r1*.72, x2=VPX+ca*r2*1.45, y2=VPY+sa*r2*.72;
+      var fade = rate>0 ? clamp((st.r-28)/60,0,1)*clamp((460-st.r)/80,0,1) : clamp((st.r-30)/70,0,1)*clamp((460-st.r)/60,0,1);
+      st.el.setAttribute('d','M'+f1(x1)+' '+f1(y1)+'L'+f1(x2)+' '+f1(y2));
+      st.el.setAttribute('stroke-width', f1(1+st.r/110));
+      st.el.setAttribute('opacity', f1(Math.min(.7,(s-2)*.08)*depK*fade));
+    });
+    /* chimney smoke: straight up when calm, bent by wind, toward/away for north/south */
+    var smokeOn = !n && w.temp<=12, D=v.x*Math.min(s,15)*9, Rz=70-Math.min(s,15)*3.5;
+    puffs.forEach(function(pf,j){
+      if (!smokeOn){ pf.el.setAttribute('opacity',0); return; }
+      if (mv) pf.a = (pf.a + dt/3.4) % 1;
+      var a=pf.a, x=118+D*a+Math.sin(a*6+j)*3*mv, y=214-Rz*a, q=Math.exp(-v.y*Math.min(s,15)*.075*a);
+      x=VPX+(x-VPX)*q; y=VPY+(y-VPY)*q;
+      pf.el.setAttribute('cx',f1(x)); pf.el.setAttribute('cy',f1(y)); pf.el.setAttribute('r',f1((4+a*9)*q)); pf.el.setAttribute('opacity',f1(.62*(a<.12?a/.12:1-a)));
+    });
+    var bases=[364,380,418,430,446];
+    dripEls.forEach(function(e,j){ var ph=mv?((t*.9+j*.23)%1):.5; e.setAttribute('cx',bases[j]); e.setAttribute('cy',f1((j===4?284:296)+ph*40)); e.setAttribute('opacity',f1(1-ph)); });
+  }
+  function frame(ts){
+    var dt = lastTs ? Math.min(.05,(ts-lastTs)/1000) : .016; lastTs=ts;
+    step(dt, ts/1000); requestAnimationFrame(frame);
+  }
+
+  function render(){
+    var n=!!O.neutral, w=W, raining=!n&&w.rain>0&&w.temp>0, snowing=!n&&w.rain>0&&w.temp<=0;
+    var c=sky(); E.sky0.style.stopColor=c[0]; E.sky1.style.stopColor=c[1]; E.sky2.style.stopColor=c[2];
+    E.sun.style.opacity = (n||w.rain>0) ? 0 : [1,1,.45,0][w.cloud];
+    E.sunGlowC.setAttribute('r', (!n && w.temp>=30) ? 150 : 118);
+    buildClouds();
+    svg.style.setProperty('--sh', n ? .05 : w.rain>0 ? .03 : [.26,.2,.09,.04][w.cloud]);
+    var snowAmt = snowing ? clamp(.5+w.rain/8,0,1) : 0;
+    [E.snowBack,E.snowGround,E.roofSnow,E.treeSnow,E.stnSnow].forEach(function(e){ e.style.opacity=snowAmt; });
+    E.peaks.style.opacity = (!n && w.temp<=3) ? 1 : 0;
+    E.icicles.style.opacity = (!n && w.temp<=-3) ? 1 : 0;
+    E.winLight.style.opacity = (!n && (w.cloud===3 || w.rain>0)) ? .9 : 0;
+    E.winDew.style.opacity = (!n && w.hum>=80 && w.temp>0) ? 1 : 0;
+    E.winFrost.style.opacity = (!n && w.temp<=-2) ? 1 : 0;
+    E.flowers.style.opacity = (!n && w.temp>=5 && w.temp<=36 && !snowing) ? 1 : 0;
+    E.tufts.style.opacity = snowing ? .7 : 1;
+    E.puddles.style.opacity = (raining && w.rain>=5) ? clamp(.55+w.rain/40,0,1) : 0;
+    E.steam.style.opacity = (!n && w.rain===0 && w.hum<=50) ? 1 : 0;
+    E.drips.style.opacity = (!n && (w.hum>=75 || w.rain>0)) ? 1 : 0;
+    E.shimmer.style.opacity = (!n && w.temp>=32 && w.rain===0) ? 1 : 0;
+    var sh = n ? 0 : [0,0,.06,.13][w.cloud] + (w.rain>0 ? .07+Math.min(.13,w.rain/180) : 0);
+    if (snowing) sh *= .45;
+    E.shade.style.opacity = f1(sh*100)/100;
+    var warm = (!n && w.temp>=28) ? Math.min(.13,(w.temp-28)/10*.13) : 0, cool = (!n && w.temp<=5) ? Math.min(.14,(5-w.temp)/15*.14) : 0;
+    E.grade.setAttribute('fill', warm>0 ? '#FF9A3C' : '#6FA2FF'); E.grade.style.opacity = (warm||cool).toFixed(3);
+    E.haze.style.opacity = (n ? 0 : clamp((w.hum>65?(w.hum-65)/35*.5:0) + (w.rain>0?Math.min(.22,w.rain/90):0), 0, .65)).toFixed(3);
+    var tl = clamp((w.temp+10)/48,0,1);
+    E.thermoCol.setAttribute('y', f1(298-46*tl)); E.thermoCol.setAttribute('height', f1(46*tl+4)); E.thermoCol.style.opacity = n?0:1;
+    var gl = n ? 0 : clamp(w.rain/30,0,1)*19;
+    E.gaugeW.setAttribute('y', f1(338-gl)); E.gaugeW.setAttribute('height', f1(gl));
+    compass(); buildDrops();
+    var kid = K.auto ? autoKid(w) : {outfit:K.outfit||'long', items:K.items||new Set()};
+    var showR = K.auto ? !n : !!K.react;
+    kidArgs = {k:kid, R: showR ? reacts(w,kid) : null, kite: !!O.kite};
+    drawKid(); drawKite();
+    var base = (O.caption!=null) ? O.caption : (O.kite ? kiteCaption(w) : autoCaption(w));
+    cap.textContent = base; cap.hidden = !base;
+    cover.hidden = !n;
+    syncGuide();
+    if (openKey) $('#bNow').textContent = n ? '예보를 확인하고 하루를 보내면 볼 수 있어요.' : INFO[openKey].now(W);
+    svg.setAttribute('aria-label', n ? '예보를 읽기 전의 마을 그림' : '마을 그림. 날씨 '+wword(w)+'. '+nowText(w));
+    if (RM) step(0, 1.5);
+  }
+  step(0,0);
+  if (!RM) requestAnimationFrame(frame);
+  return {
+    set: function(w,k,o){ W=copy(w); K=k||{auto:true}; O=o||{}; render(); },
+    reacts: reacts
+  };
+})();
+
+/* ---------- controls ---------- */
+function ctlHTML(){
+  var pad=['북서','북','북동','서',null,'동','남서','남','남동'].map(function(d){
+    return d ? '<button type="button" data-dir="'+d+'" aria-pressed="false" aria-label="'+d+'쪽에서 불어오는 바람">'+d+'</button>'
+             : '<span class="dir-c" aria-hidden="true"><svg viewBox="-20 -20 40 40"><circle r="17" fill="none" stroke="currentColor" stroke-opacity=".22" stroke-width="2"/><g class="dir-arrow"><path d="M0 11V-6" stroke="var(--wind)" stroke-width="3.4" stroke-linecap="round"/><path d="M0 -14L-6.5 -4.5H6.5Z" fill="var(--wind)"/></g></svg></span>';
+  }).join('');
+  var segs=CLOUDS.map(function(c,i){ return '<button type="button" data-cloud="'+i+'" aria-pressed="false">'+[IC.sun,IC.few,IC.many,IC.over][i]+'<span>'+c+'</span></button>'; }).join('');
+  return ''+
+  '<div class="ctl" data-el="temp"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.temp+'</span>기온</span><output class="ctl-val" data-out="temp"></output></div>'+
+    '<p class="ctl-def">공기의 따뜻하고 차가운 정도</p>'+
+    '<input type="range" class="temp-range" data-in="temp" min="-10" max="38" step="1" aria-label="기온, 섭씨 도">'+
+    '<div class="scale"><span>춥다</span><span>덥다</span></div></div>'+
+  '<div class="ctl" data-el="wind"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.wind+'</span>바람</span><output class="ctl-val" data-out="wind"></output></div>'+
+    '<p class="ctl-def">바람이 불어오는 방향(풍향)과 빠르기(풍속)</p>'+
+    '<div class="wind-row"><div class="dirpad" role="group" aria-label="풍향: 바람이 불어오는 쪽">'+pad+'</div>'+
+    '<div class="spd"><div class="spd-lab">빠르기 <b data-out="spdword"></b></div>'+
+    '<input type="range" data-in="spd" min="0" max="20" step="1" aria-label="풍속, 초속 미터">'+
+    '<div class="scale"><span>약하게</span><span>세게</span></div></div></div>'+
+    '<p class="ctl-tip">바람이 불어오는 쪽을 눌러요. 서쪽에서 불어오는 바람은 서풍이에요.</p></div>'+
+  '<div class="ctl" data-el="hum"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.hum+'</span>습도</span><output class="ctl-val" data-out="hum"></output></div>'+
+    '<p class="ctl-def">공기 중에 수증기가 포함된 정도</p>'+
+    '<input type="range" data-in="hum" min="10" max="100" step="5" aria-label="습도, 퍼센트">'+
+    '<div class="scale"><span>건조하다</span><span>습하다</span></div></div>'+
+  '<div class="ctl" data-el="cloud"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.cloud+'</span>구름의 양</span><output class="ctl-val" data-out="cloud"></output></div>'+
+    '<p class="ctl-def">하늘에 떠 있는 구름의 양, 맑거나 흐린 정도</p>'+
+    '<div class="seg" role="group" aria-label="구름의 양">'+segs+'</div></div>'+
+  '<div class="ctl" data-el="rain"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.rain+'</span>강수량</span><output class="ctl-val" data-out="rain"></output></div>'+
+    '<p class="ctl-def">비나 눈 등이 내린 양</p>'+
+    '<input type="range" data-in="rain" min="0" max="30" step="1" aria-label="강수량, 밀리미터">'+
+    '<div class="scale"><span>0 mm</span><span>30 mm</span></div>'+
+    '<p class="ctl-tip" data-rain-tip hidden>기온이 0 ℃ 이하라 눈이 내려요. 눈은 녹여서 물의 양으로 강수량을 재요.</p></div>';
+}
+function Controls(root, getW, onChange){
+  root.innerHTML = ctlHTML();
+  var q=function(s){ return root.querySelector(s); };
+  var inT=q('[data-in=temp]'), inH=q('[data-in=hum]'), inS=q('[data-in=spd]'), inR=q('[data-in=rain]');
+  function fill(inp){ inp.style.setProperty('--p', ((inp.value-inp.min)/(inp.max-inp.min)*100)+'%'); }
+  inT.addEventListener('input', function(){ getW().temp=+inT.value; sync(); onChange('temp'); });
+  inH.addEventListener('input', function(){ getW().hum=+inH.value; sync(); onChange('hum'); });
+  inS.addEventListener('input', function(){ getW().spd=+inS.value; sync(); onChange('wind'); });
+  inR.addEventListener('input', function(){ getW().rain=+inR.value; sync(); onChange('rain'); });
+  $$('[data-dir]',root).forEach(function(b){ b.addEventListener('click', function(){ var w=getW(); w.dir=b.dataset.dir; if (w.spd===0) w.spd=3; sync(); onChange('wind'); }); });
+  $$('[data-cloud]',root).forEach(function(b){ b.addEventListener('click', function(){ getW().cloud=+b.dataset.cloud; sync(); onChange('cloud'); }); });
+  function sync(){
+    var w=getW();
+    inT.value=w.temp; inH.value=w.hum; inS.value=w.spd; inR.value=w.rain; [inT,inH,inS,inR].forEach(fill);
+    q('[data-out=temp]').innerHTML = w.temp+'<small>℃</small>';
+    q('[data-out=hum]').innerHTML = w.hum+'<small>%</small>';
+    q('[data-out=wind]').innerHTML = w.spd===0 ? '고요' : w.dir+'풍 '+w.spd+'<small>m/s</small>';
+    q('[data-out=spdword]').textContent = spdWord(w.spd);
+    q('[data-out=cloud]').textContent = CLOUDS[w.cloud];
+    q('[data-out=rain]').innerHTML = w.rain+'<small>mm</small>' + (w.rain>0 ? '<span class="kind">'+(w.temp<=0?'눈':'비')+'</span>' : '');
+    $$('[data-dir]',root).forEach(function(b){ b.setAttribute('aria-pressed', String(w.spd>0 && b.dataset.dir===w.dir)); });
+    var arrow=q('.dir-arrow'); arrow.style.transform='rotate('+(DIRS.indexOf(w.dir)*45+180)+'deg)'; arrow.style.opacity = w.spd===0 ? .25 : 1;
+    $$('[data-cloud]',root).forEach(function(b){ b.setAttribute('aria-pressed', String(+b.dataset.cloud===w.cloud)); });
+    q('[data-rain-tip]').hidden = !(w.rain>0 && w.temp<=0);
+  }
+  return {
+    sync: sync,
+    highlight: function(keys){ $$('.ctl',root).forEach(function(c){ c.classList.toggle('hl', keys.indexOf(c.dataset.el)>-1); }); }
+  };
+}
+
+/* ---------- data ---------- */
+var MISSIONS = [
+  {id:'laundry', face:'🧺', who:'세탁소 사장님',
+   say:'손님이 맡긴 이불을 밖에 널었어요. 해가 지기 전에 바싹 말랐으면 좋겠어요.',
+   start:{temp:18,hum:85,dir:'남동',spd:0,cloud:2,rain:0}, key:['hum','rain','wind'],
+   rules:[
+     {el:'rain', ok:function(w){return w.rain===0;}, yes:'비가 오지 않아요.', no:'비가 오면 빨래가 다시 젖어요. 강수량을 0 mm로 만들어 보세요.'},
+     {el:'hum', ok:function(w){return w.hum<=50;}, yes:'습도가 낮아 빨래의 물기가 공기 중으로 잘 날아가요.', no:function(w){return '습도가 '+w.hum+' %로 높아요. 공기 중에 수증기가 많으면 빨래가 잘 마르지 않아요. 50 % 이하로 낮춰 보세요.';}},
+     {el:'wind', ok:function(w){return w.spd>=2 && w.spd<=13;}, yes:'바람이 알맞게 불어 빨래가 더 빨리 말라요.', no:function(w){return w.spd>=14?'바람이 너무 세서 빨래가 날아가 버렸어요! 풍속을 13 m/s 이하로 줄여 보세요.':'바람이 거의 없어요. 바람이 조금 불면 빨래가 더 빨리 말라요.';}}
+   ],
+   learn:'습도가 낮고 바람이 부는 날에 빨래가 잘 말라요. 습도가 높은 날에는 빨래가 잘 마르지 않아 제습기를 쓰기도 해요.'},
+  {id:'farm', face:'🌾', who:'농부 할아버지',
+   say:'오랫동안 비가 오지 않아 논바닥이 쩍쩍 갈라졌단다. 논을 흠뻑 적실 비를 내려 주렴.',
+   start:{temp:30,hum:40,dir:'남서',spd:2,cloud:0,rain:0}, key:['rain','cloud','hum','temp'],
+   rules:[
+     {el:'rain', ok:function(w){return w.rain>=10;}, yes:'논을 적실 만큼 비가 많이 내려요.', no:function(w){return w.rain===0?'아직 비가 오지 않아요. 강수량을 올려 보세요.':'강수량 '+w.rain+' mm는 논을 적시기에 부족해요. 10 mm 이상 내려 보세요.';}},
+     {el:'temp', ok:function(w){return w.temp>0;}, yes:'기온이 0 ℃보다 높아 비로 내려요.', no:'기온이 0 ℃ 이하라 비 대신 눈이 내려요. 논에는 비가 필요해요.'},
+     {el:'cloud', ok:function(w){return w.cloud>=2;}, yes:'구름이 많아요. 비는 구름에서 내려요.', no:'구름이 거의 없는데 비가 올까요? 비는 구름에서 내리니 구름의 양을 늘려 보세요.'},
+     {el:'hum', ok:function(w){return w.hum>=70;}, yes:'비 오는 날답게 습도가 높아요.', no:function(w){return '습도 '+w.hum+' %는 비 오는 날치고 낮아요. 비가 오는 날은 공기 중에 수증기가 많아 습도가 높아요.';}}
+   ],
+   learn:'비가 오는 날은 맑은 날보다 구름이 많고 습도가 높아요. 비 예보를 보고 농부는 논밭에 물을 대는 계획을 조절해요.'},
+  {id:'snow', face:'⛄', who:'동생 하준이',
+   say:'나 눈사람 만들고 싶어! 눈이 펑펑 내렸으면 좋겠다.',
+   start:{temp:12,hum:55,dir:'북서',spd:3,cloud:1,rain:0}, key:['temp','rain','cloud'],
+   rules:[
+     {el:'temp', ok:function(w){return w.temp<=0;}, yes:'기온이 0 ℃ 이하라 눈이 내려요.', no:function(w){return '기온이 '+w.temp+' ℃라 내려도 비가 돼요. 0 ℃ 이하로 내려 보세요.';}},
+     {el:'rain', ok:function(w){return w.rain>=3;}, yes:'눈사람을 만들 만큼 눈이 내려요.', no:function(w){return w.rain===0?'아직 아무것도 내리지 않아요. 강수량을 올려 보세요.':'눈이 조금밖에 안 와요. 강수량을 3 mm 이상 올려 보세요.';}},
+     {el:'cloud', ok:function(w){return w.cloud>=2;}, yes:'구름이 하늘을 덮었어요.', no:'눈도 구름에서 내려요. 구름의 양을 늘려 보세요.'}
+   ],
+   learn:'기온이 0 ℃ 이하일 때는 비 대신 눈이 내려요. 눈이 내린 양도 녹여서 물의 양으로 재어 강수량으로 나타내요.'},
+  {id:'kite', face:'🪁', who:'연날리기 대회 진행자', kite:true,
+   say:'연이 운동장 동쪽 강가 쪽으로 높이 날아가야 해요. 바람이 알맞게 불게 해 주세요.',
+   start:{temp:15,hum:45,dir:'동',spd:1,cloud:1,rain:0}, key:['wind','rain'],
+   rules:[
+     {el:'wind', ok:function(w){return w.dir==='서';}, yes:'서풍은 서쪽에서 불어오는 바람이라 연이 동쪽으로 날아가요.', no:function(w){return w.dir==='동'?'동풍은 동쪽에서 불어오는 바람이에요. 연이 서쪽으로 날아가요!':w.dir+'풍은 '+w.dir+'쪽에서 불어오는 바람이에요. 연이 동쪽으로 가려면 바람이 어느 쪽에서 불어와야 할까요?';}},
+     {el:'wind', ok:function(w){return w.spd>=3 && w.spd<=8;}, yes:'바람의 빠르기가 연을 날리기에 알맞아요.', no:function(w){return w.spd<3?'바람이 너무 약해 연이 뜨지 않아요.':'바람이 너무 세서 연줄이 끊어질 수 있어요. 빠르기를 보통으로 맞춰 보세요.';}},
+     {el:'rain', ok:function(w){return w.rain===0;}, yes:'비가 오지 않아요.', no:'비가 오면 종이로 만든 연이 젖어요.'}
+   ],
+   learn:'풍향은 바람이 불어오는 방향이에요. 서풍은 서쪽에서 불어와 동쪽으로 불어 가요.'},
+  {id:'beach', face:'🏖️', who:'해수욕장 안전요원',
+   say:'해수욕하기 딱 좋은 한여름 날을 부탁해요. 파도가 높으면 위험하니 조심해 주세요.',
+   start:{temp:19,hum:70,dir:'남',spd:9,cloud:3,rain:0}, key:['temp','cloud','wind','rain'],
+   rules:[
+     {el:'temp', ok:function(w){return w.temp>=28;}, yes:'물놀이하기 좋은 더운 날이에요.', no:function(w){return '기온 '+w.temp+' ℃는 물놀이하기에 추워요. 28 ℃ 이상으로 올려 보세요.';}},
+     {el:'cloud', ok:function(w){return w.cloud<=1;}, yes:'하늘이 맑아요. 모자와 자외선 차단제를 챙겨요.', no:'구름이 많아 흐려요. 맑은 날로 만들어 보세요.'},
+     {el:'rain', ok:function(w){return w.rain===0;}, yes:'비가 오지 않아요.', no:'비가 오면 해수욕을 하기 어려워요.'},
+     {el:'wind', ok:function(w){return w.spd<=5;}, yes:'바람이 약해 파도가 잔잔해요.', no:function(w){return '바람이 '+w.spd+' m/s로 세면 파도가 높아져 위험해요. 약하게 줄여 보세요.';}}
+   ],
+   learn:'맑고 더운 날에는 물놀이 같은 야외 활동을 많이 해요. 이런 날에는 모자, 자외선 차단제, 시원한 음료가 많이 팔려요.'},
+  {id:'storm', face:'📺', who:'뉴스 기상 캐스터',
+   say:'시청자들에게 강풍 주의보가 내려지는 날씨를 보여 주려고 해요. 바람이 아주 세게 부는 날을 만들어 주세요.',
+   start:{temp:16,hum:50,dir:'서',spd:3,cloud:1,rain:0}, key:['wind'],
+   rules:[
+     {el:'wind', ok:function(w){return w.spd>=14;}, yes:'풍속이 14 m/s 이상이면 강풍 주의보가 내려질 수 있어요.', no:function(w){return '풍속 '+w.spd+' m/s로는 부족해요. 빠르기를 매우 강함(14 m/s 이상)까지 올려 보세요.';}}
+   ],
+   learn:'바람이 강하게 분다는 예보가 있으면 간판, 화분, 비닐하우스 같은 시설물을 단단히 고정해 피해를 막아요.'}
+];
+
+var CLOTHES = [['short','반팔'],['long','긴팔'],['coat','두꺼운 외투']];
+var CL = {short:'반팔', long:'긴팔', coat:'두꺼운 외투'};
+var ITEMS = [['umbrella','우산'],['hat','모자와 선글라스'],['scarf','목도리와 장갑'],['water','물병']];
+var ITEM_EL = {umbrella:'rain', hat:'cloud', scarf:'temp', water:'temp'};
+var ROUNDS = [
+  {title:'한여름 토요일', story:'내일은 친구들과 놀이터에서 만나기로 했어요.', w:{temp:35,hum:55,dir:'남서',spd:1,cloud:0,rain:0},
+   town:{q:'무더운 날, 우리 마을은 어떻게 할까요?', el:'temp', opts:[
+     {t:'운동장에서 오래달리기 대회를 열어요', ok:false, why:'기온이 35 ℃나 되는 날 오래 달리면 더위를 먹기 쉬워요.'},
+     {t:'한낮에는 야외 활동을 줄이고 무더위 쉼터를 열어요', ok:true, why:'기온이 35 ℃로 매우 높아요. 한낮 야외 활동을 줄여 건강을 지켜요.'},
+     {t:'제습기를 켜고 빨래를 실내에 널어요', ok:false, why:'강수량 0 mm, 습도 55 %라 빨래는 밖에서도 잘 말라요.'}]}},
+  {title:'장마철 월요일', story:'내일은 학교까지 걸어서 가는 날이에요.', w:{temp:29,hum:95,dir:'남동',spd:4,cloud:3,rain:20},
+   town:{q:'비가 많이 오는 날, 우리 마을은 어떻게 할까요?', el:'hum', opts:[
+     {t:'빨래를 실내에 널고 제습기를 켜요', ok:true, why:'습도가 95 %로 매우 높아 빨래가 잘 마르지 않아요.'},
+     {t:'이불을 마당 빨랫줄에 널어요', ok:false, why:'강수량이 20 mm예요. 비에 이불이 젖어요.'},
+     {t:'강가 산책로에서 자전거를 타요', ok:false, why:'비가 많이 오면 강물이 불어나 위험해요.'}]}},
+  {title:'눈 오는 겨울 아침', story:'내일은 아침 일찍 등교해야 해요.', w:{temp:-6,hum:85,dir:'북서',spd:5,cloud:3,rain:6},
+   town:{q:'눈이 내리는 추운 날, 우리 마을은 어떻게 할까요?', el:'temp', opts:[
+     {t:'늦지 않게 평소처럼 뛰어서 등교해요', ok:false, why:'눈이 쌓이고 언 길에서 뛰면 넘어지기 쉬워요.'},
+     {t:'화분을 베란다 밖에 내놓아요', ok:false, why:'기온이 -6 ℃라 화분 속 물이 얼어요.'},
+     {t:'제설차가 눈을 치우고, 미끄러운 길을 조심해서 걸어요', ok:true, why:'기온이 -6 ℃라 내린 눈이 얼어 길이 미끄러워요.'}]}},
+  {title:'바람이 거센 봄날', story:'내일은 공원에서 체육 수업이 있는 날이에요.', w:{temp:14,hum:35,dir:'북서',spd:16,cloud:2,rain:0},
+   town:{q:'바람이 아주 센 날, 우리 마을은 어떻게 할까요?', el:'wind', opts:[
+     {t:'운동장에서 연날리기 대회를 열어요', ok:false, why:'바람이 너무 세서 연줄이 끊어지고 다칠 수 있어요.'},
+     {t:'간판, 화분, 비닐하우스를 단단히 고정해요', ok:true, why:'풍속이 16 m/s로 매우 세서 물건이 날아갈 수 있어요.'},
+     {t:'우산을 넉넉히 준비해 나눠 줘요', ok:false, why:'강수량이 0 mm라 비가 오지 않아요.'}]}},
+  {title:'맑은 가을날', story:'내일은 가족과 공원으로 소풍을 가요.', w:{temp:21,hum:30,dir:'서',spd:3,cloud:1,rain:0},
+   town:{q:'맑고 건조한 날, 우리 마을은 어떻게 할까요?', el:'hum', opts:[
+     {t:'제습기를 하루 종일 켜 둬요', ok:false, why:'습도가 30 %로 이미 건조해요.'},
+     {t:'모든 야외 수업을 취소해요', ok:false, why:'맑고 선선해서 야외 활동하기 좋은 날이에요.'},
+     {t:'이불을 밖에 널어 바싹 말려요', ok:true, why:'습도 30 %, 강수량 0 mm에 바람도 불어 빨래가 잘 말라요.'}]}}
+];
+function clothesFor(t){ return t>=25?'short':t>=10?'long':'coat'; }
+function itemNeed(k,w){
+  if (k==='umbrella') return w.rain>0 ? (w.spd>=14?'unneeded':'required') : 'unneeded';
+  if (k==='hat') return (w.cloud<=1 && w.rain===0) ? (w.temp>=25?'required':'optional') : 'unneeded';
+  if (k==='scarf') return w.temp<=5 ? 'required' : w.temp>=15 ? 'unneeded' : 'optional';
+  if (k==='water') return w.temp>=30 ? 'required' : 'optional';
+}
+function itemMsg(k,w,kind){
+  var t=w.temp, r=w.rain, fall=t<=0?'눈':'비';
+  if (k==='umbrella') return kind==='good' ? '강수량 '+r+' mm, '+josa(fall,'이','가')+' 내려요. 우산을 잘 챙겼어요.'
+    : kind==='missing' ? '강수량이 '+r+' mm예요. '+josa(fall,'을','를')+' 막을 우산이 필요해요.'
+    : '강수량이 0 mm라 우산은 필요 없어요.';
+  if (k==='hat') return kind==='good' ? '맑고 기온이 '+t+' ℃라 햇볕이 강해요. 모자와 선글라스를 잘 챙겼어요.'
+    : kind==='missing' ? '맑고 기온이 '+t+' ℃라 햇볕이 강해요. 모자와 선글라스로 햇볕을 가려요.'
+    : (r>0 ? josa(fall,'이','가')+' 내려서 모자와 선글라스는 필요 없어요.' : '구름의 양이 \''+CLOUDS[w.cloud]+'\'이라 햇볕이 강하지 않아요.'+(w.spd>=14?' 바람이 세서 모자가 날아갈 수도 있어요.':''));
+  if (k==='scarf') return kind==='good' ? '기온이 '+t+' ℃로 추워요. 목도리와 장갑을 잘 챙겼어요.'
+    : kind==='missing' ? '기온이 '+t+' ℃로 추워요. 목도리와 장갑이 필요해요.'
+    : '기온이 '+t+' ℃라 목도리와 장갑은 더워요.';
+  if (k==='water') return kind==='good' ? '기온이 '+t+' ℃로 더워요. 물을 자주 마셔요.' : '기온이 '+t+' ℃로 더워 땀을 많이 흘려요. 물병을 챙겨요.';
+}
+function li(mark, el, msg){ var m={ok:'✓',no:'✕',meh:'!'}[mark]; return '<li><span class="mark '+mark+'" aria-label="'+({ok:'맞아요',no:'다시 생각해요',meh:'없어도 돼요'}[mark])+'">'+m+'</span><span>'+(el?tag(el):'')+msg+'</span></li>'; }
+
+$$('.chip[data-el], th[data-el]').forEach(function(e){ e.insertAdjacentHTML('afterbegin', EI[e.dataset.el]); });
+
+/* ---------- stage 1: 날씨 만들기 ---------- */
+var S1 = (function(){
+  var W = {temp:20,hum:60,dir:'서',spd:2,cloud:1,rain:0};
+  var found = {}; (P.found||[]).forEach(function(k){ found[k]=true; });
+  var ctl = Controls($('#ctl1'), function(){ return W; }, function(k){
+    if (!found[k]){ found[k]=true; P.found=Object.keys(found); save(); }
+    update();
+  });
+  function count(){ return Object.keys(found).length; }
+  function nudges(w){
+    var out=[];
+    if (w.rain>0 && w.cloud<=1) out.push('구름이 거의 없는데 비나 눈이 올까요? 비와 눈은 구름에서 내려요.');
+    if (w.rain>0 && w.hum<60) out.push('비나 눈이 오는 날은 공기 중에 수증기가 많아 습도가 높은 편이에요.');
+    return out;
+  }
+  function update(){
+    $$('#chips1 .chip').forEach(function(c){ c.classList.toggle('on', !!found[c.dataset.el]); });
+    $('#foundN').textContent = count();
+    var nd = nudges(W), box=$('#nudge1');
+    box.hidden = !nd.length;
+    box.innerHTML = nd.length ? '<b>잠깐, 이상하지 않나요?</b>'+nd.map(function(t){ return '<span>'+t+'</span>'; }).join('') : '';
+    $('#rec').hidden = count()<5;
+    $('#nowIc').innerHTML = wicon(W);
+    $('#nowW').textContent = '지금 날씨: '+wword(W);
+    $('#nowT').textContent = nowText(W);
+    Scene.set(W, {auto:true}, {});
+  }
+  function table(){
+    var rows = P.records || [];
+    $('#recWrap').hidden = !rows.length;
+    $('#recClear').hidden = !rows.length;
+    $('#recBody').innerHTML = rows.map(function(w){
+      return '<tr><td class="w">'+wicon(w)+wword(w)+'</td><td>'+w.temp+' ℃</td><td>'+w.hum+' %</td><td>'+(w.spd===0?'바람 없음':w.dir+'풍 '+w.spd+' m/s')+'</td><td>'+CLOUDS[w.cloud]+'</td><td>'+w.rain+' mm</td></tr>';
+    }).join('');
+    $('#think').hidden = rows.length<3;
+  }
+  $('#recBtn').addEventListener('click', function(){
+    P.records = (P.records||[]).concat([copy(W)]).slice(-6);
+    if (P.records.length>=3) P.s1 = true;
+    save(); table(); marks();
+  });
+  $('#recClear').addEventListener('click', function(){ P.records=[]; save(); table(); });
+  return { show: function(){ ctl.sync(); update(); table(); } };
+})();
+
+/* ---------- stage 2: 날씨 주문 ---------- */
+var S2 = (function(){
+  var i = 0;
+  for (var n=0;n<MISSIONS.length;n++){ if (P.missions.indexOf(MISSIONS[n].id)<0){ i=n; break; } }
+  var W = copy(MISSIONS[i].start);
+  var res = $('#res2');
+  var ctl = Controls($('#ctl2'), function(){ return W; }, function(){
+    Scene.set(W, {auto:true}, {kite:!!MISSIONS[i].kite});
+    if (res.innerHTML) res.classList.add('stale');
+  });
+  function dots(){
+    $('#mdots').innerHTML = MISSIONS.map(function(m,k){
+      var d = P.missions.indexOf(m.id)>-1;
+      return '<button type="button" class="dot'+(d?' done':'')+(k===i?' cur':'')+'" data-m="'+k+'" aria-label="주문 '+(k+1)+(d?', 해결함':'')+'"'+(k===i?' aria-current="true"':'')+'>'+(k+1)+'</button>';
+    }).join('');
+  }
+  function load(k){
+    i = k; var M = MISSIONS[i];
+    W = copy(M.start);
+    $('#oFace').innerHTML = AV[M.id]; $('#oWho').textContent = M.who; $('#oSay').textContent = M.say;
+    $('#hint').hidden = true; ctl.highlight([]);
+    res.innerHTML = ''; res.classList.remove('stale');
+    ctl.sync(); dots();
+    Scene.set(W, {auto:true}, {kite:!!M.kite});
+  }
+  $('#mdots').addEventListener('click', function(e){ var b=e.target.closest('[data-m]'); if (b) load(+b.dataset.m); });
+  $('#hintBtn').addEventListener('click', function(){
+    var M=MISSIONS[i], h=$('#hint');
+    h.hidden = false;
+    h.innerHTML = '이 부탁에서 살펴볼 기상 요소 '+M.key.map(tag).join('');
+    ctl.highlight(M.key);
+  });
+  $('#sendBtn').addEventListener('click', function(){
+    var M = MISSIONS[i];
+    var list = M.rules.map(function(r){ var ok=r.ok(W), m=ok?r.yes:r.no; return {ok:ok, el:r.el, msg: typeof m==='function'?m(W):m}; });
+    var all = list.every(function(r){ return r.ok; });
+    var html = '<ul class="checks">'+list.map(function(r){ return li(r.ok?'ok':'no', r.el, r.msg); }).join('')+'</ul>';
+    if (all){
+      if (P.missions.indexOf(M.id)<0){ P.missions.push(M.id); save(); marks(); }
+      var next = -1;
+      for (var k=1;k<=MISSIONS.length;k++){ var c=(i+k)%MISSIONS.length; if (P.missions.indexOf(MISSIONS[c].id)<0){ next=c; break; } }
+      html += '<div class="win">'+STAMP+'<div><p class="learn-lab">알게 된 점</p><p class="learn">'+M.learn+'</p>'+
+        (next>-1 ? '<button type="button" class="btn primary" data-next="'+next+'">다음 주문 받기</button>'
+                 : '<button type="button" class="btn primary" data-go="3">날씨 예보관 되러 가기</button>')+'</div></div>';
+    } else {
+      html += '<p class="retry">✕ 표시를 보고 기상 요소를 다시 바꾼 뒤 한 번 더 보내 보세요.</p>';
+    }
+    res.innerHTML = html; res.classList.remove('stale');
+    dots();
+    if (window.innerWidth<900) res.scrollIntoView({behavior:RM?'auto':'smooth', block:'nearest'});
+  });
+  res.addEventListener('click', function(e){ var b=e.target.closest('[data-next]'); if (b){ load(+b.dataset.next); $('#s2').scrollIntoView({behavior:RM?'auto':'smooth', block:'start'}); } });
+  var started=false;
+  return { show: function(){ if (!started){ started=true; load(i); } else { ctl.sync(); dots(); Scene.set(W,{auto:true},{kite:!!MISSIONS[i].kite}); } } };
+})();
+
+/* ---------- stage 3: 날씨 예보관 ---------- */
+var S3 = (function(){
+  var box = $('#round');
+  var ri = firstOpen();
+  var ch, done;
+  function firstOpen(){ for (var k=0;k<ROUNDS.length;k++){ if (P.stars[k]==null) return k; } return ROUNDS.length; }
+  function dots(){
+    var html = ROUNDS.map(function(r,k){
+      var d = P.stars[k]!=null;
+      return '<button type="button" class="dot'+(d?' done':'')+(k===ri?' cur':'')+'" data-r="'+k+'" aria-label="예보 '+(k+1)+(d?', 별 '+P.stars[k]+'개':'')+'"'+(k===ri?' aria-current="true"':'')+'>'+(k+1)+'</button>';
+    }).join('');
+    if (firstOpen()===ROUNDS.length) html += '<button type="button" class="dot'+(ri===ROUNDS.length?' cur':'')+'" data-r="'+ROUNDS.length+'" aria-label="예보관 수첩">✎</button>';
+    $('#rdots').innerHTML = html;
+  }
+  function kid(react){ return {auto:false, outfit: ch.outfit||'long', items: ch.items, react: react}; }
+  function preview(){
+    var R=ROUNDS[ri];
+    Scene.set(R.w, kid(false), {neutral:true, caption: ch.outfit ? '준비를 마치면 하루 보내기를 눌러요' : '예보를 읽고 옷을 골라 입혀 보세요'});
+    var ready = !!ch.outfit && ch.town!=null;
+    $('#dayBtn').disabled = !ready;
+    $('#need').hidden = ready;
+  }
+  function cell(el,lab,val,sub){ return '<div class="fc-cell" data-el="'+el+'"><div class="fc-ic">'+EI[el]+'</div><div class="fc-lab">'+lab+'</div><div class="fc-val">'+val+'</div>'+(sub?'<div class="fc-sub">'+sub+'</div>':'')+'</div>'; }
+  function renderRound(){
+    ch = {outfit:null, items:new Set(), town:null}; done=false;
+    var R=ROUNDS[ri], w=R.w;
+    box.innerHTML =
+      '<div class="fc"><div class="fc-head"><span class="fc-title">내일 예보 '+(ri+1)+'. '+R.title+'</span><span class="fc-story">'+R.story+'</span></div>'+
+      '<div class="fc-grid">'+
+        cell('temp','기온', w.temp+'<small>℃</small>','')+
+        cell('hum','습도', w.hum+'<small>%</small>','')+
+        cell('wind','바람', w.dir+'풍', w.spd+' m/s, '+spdWord(w.spd))+
+        cell('cloud','구름의 양', CLOUDS[w.cloud],'')+
+        cell('rain','강수량', w.rain+'<small>mm</small>', w.rain>0?'비나 눈이 내려요':'내리지 않아요')+
+      '</div></div>'+
+      '<fieldset class="q" id="qC"><legend>1. 무엇을 입을까요?</legend><div class="tiles">'+
+        CLOTHES.map(function(c){ return '<button type="button" class="tile" data-c="'+c[0]+'" aria-pressed="false">'+IC[c[0]]+'<span>'+c[1]+'</span></button>'; }).join('')+
+      '</div></fieldset>'+
+      '<fieldset class="q" id="qI"><legend>2. 무엇을 챙길까요? <small>여러 개 골라도 돼요</small></legend><div class="tiles four">'+
+        ITEMS.map(function(c){ return '<button type="button" class="tile" data-i="'+c[0]+'" aria-pressed="false">'+IC[c[0]]+'<span>'+c[1]+'</span></button>'; }).join('')+
+      '</div></fieldset>'+
+      '<fieldset class="q" id="qT"><legend>3. '+R.town.q+'</legend><div class="opts">'+
+        R.town.opts.map(function(o,k){ return '<button type="button" class="opt" data-t="'+k+'" aria-pressed="false"><span class="radio" aria-hidden="true"></span><span>'+o.t+'</span></button>'; }).join('')+
+      '</div></fieldset>'+
+      '<div class="send"><button class="btn primary" id="dayBtn" type="button" disabled>하루 보내기</button><span class="need" id="need">옷과 마을의 대비 방법을 골라 주세요</span></div>'+
+      '<div class="result" id="res3" aria-live="polite"></div>';
+    dots(); preview();
+  }
+  box.addEventListener('click', function(e){
+    var b;
+    if ((b=e.target.closest('[data-c]')) && !done){ ch.outfit=b.dataset.c; $$('[data-c]',box).forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); }); preview(); return; }
+    if ((b=e.target.closest('[data-i]')) && !done){ var k=b.dataset.i; if (ch.items.has(k)) ch.items.delete(k); else ch.items.add(k); b.setAttribute('aria-pressed', String(ch.items.has(k))); preview(); return; }
+    if ((b=e.target.closest('[data-t]')) && !done){ ch.town=+b.dataset.t; $$('[data-t]',box).forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); }); preview(); return; }
+    if (e.target.closest('#dayBtn')){ grade(); return; }
+    if (e.target.closest('#nextDay')){ ri = Math.min(ri+1, ROUNDS.length); if (ri===ROUNDS.length && firstOpen()<ROUNDS.length) ri=firstOpen(); show(); $('#s3').scrollIntoView({behavior:RM?'auto':'smooth', block:'start'}); return; }
+    if (e.target.closest('#redo')){ renderRound(); $('#s3').scrollIntoView({behavior:RM?'auto':'smooth', block:'start'}); return; }
+    if (e.target.closest('#reflSave')){ P.reflection=$('#refl').value; save(); $('#reflMsg').textContent='저장했어요.'; return; }
+    if (e.target.closest('#again')){ P.stars=[]; save(); marks(); ri=0; show(); return; }
+  });
+  $('#rdots').addEventListener('click', function(e){ var b=e.target.closest('[data-r]'); if (b){ ri=+b.dataset.r; show(); } });
+  function grade(){
+    done = true;
+    var R=ROUNDS[ri], w=R.w;
+    var need=clothesFor(w.temp), cOk = ch.outfit===need;
+    var cLine = li(cOk?'ok':'no','temp', cOk ? '기온이 '+w.temp+' ℃라 '+josa(CL[need],'이','가')+' 알맞아요.' : '기온이 '+w.temp+' ℃예요. '+josa(CL[ch.outfit],'보다','보다')+' '+josa(CL[need],'이','가')+' 알맞아요.');
+    var iOk=true, iLines=[];
+    ITEMS.forEach(function(it){
+      var k=it[0], st=itemNeed(k,w), picked=ch.items.has(k);
+      if (st==='required'){ if (picked) iLines.push(li('ok',ITEM_EL[k],itemMsg(k,w,'good'))); else { iOk=false; iLines.push(li('no',ITEM_EL[k],itemMsg(k,w,'missing'))); } }
+      else if (st==='unneeded' && picked){ iOk=false; iLines.push(li('meh',ITEM_EL[k],itemMsg(k,w,'extra'))); }
+    });
+    if (!iLines.length) iLines.push(li('ok',null,'꼭 챙겨야 할 준비물이 없는 날이에요. 알맞게 골랐어요.'));
+    var o=R.town.opts[ch.town], tOk=o.ok, right=R.town.opts.filter(function(x){ return x.ok; })[0];
+    var tLines = li(tOk?'ok':'no', R.town.el, o.why) + (tOk ? '' : li('ok', null, '알맞은 대비는 “'+right.t+'”예요. '+right.why));
+    var stars = (cOk?1:0)+(iOk?1:0)+(tOk?1:0);
+    if (P.stars[ri]==null || stars>P.stars[ri]) P.stars[ri]=stars;
+    save(); marks();
+    $$('.tile,.opt',box).forEach(function(x){ x.setAttribute('aria-disabled','true'); });
+    $$('fieldset.q',box).forEach(function(f){ f.classList.add('locked'); });
+    $$('[data-t]',box).forEach(function(x){ var k=+x.dataset.t; if (R.town.opts[k].ok) x.classList.add('right'); else if (k===ch.town) x.classList.add('wrong'); });
+    $('#dayBtn').disabled = true;
+    var kd = kid(true), rx = Scene.reacts(w, {outfit:kd.outfit, items:kd.items});
+    var capText = rx.flip ? '앗, 바람에 우산이 뒤집혔어요!' : rx.wet ? '앗, 옷이 다 젖었어요!' : rx.cold ? '으슬으슬, 너무 추워요!' : (rx.hot && ch.outfit!=='short') ? '땀이 뻘뻘, 옷이 너무 더워요!' : stars===3 ? '날씨에 딱 맞게 준비했어요!' : '하루를 보냈어요. 결과를 확인해 보세요.';
+    Scene.set(w, kd, {caption:capText});
+    var head = stars===3 ? '날씨를 잘 읽은 예보관이에요!' : stars===2 ? '거의 다 맞았어요.' : '기상 요소를 다시 살펴봐요.';
+    $('#res3').innerHTML =
+      '<div class="res-head"><span class="stars" role="img" aria-label="별 '+stars+'개">'+[0,1,2].map(function(k){ return starSVG(k<stars); }).join('')+'</span><span>'+head+'</span></div>'+
+      '<h4>옷차림</h4><ul class="checks">'+cLine+'</ul>'+
+      '<h4>준비물</h4><ul class="checks">'+iLines.join('')+'</ul>'+
+      '<h4>마을의 대비</h4><ul class="checks">'+tLines+'</ul>'+
+      '<div class="send"><button type="button" class="btn primary" id="nextDay">'+(ri<ROUNDS.length-1?'다음 날 예보 보기':(firstOpen()<ROUNDS.length?'남은 예보 풀기':'예보관 수첩 보기'))+'</button><button type="button" class="btn ghost" id="redo">이 예보 다시 풀기</button></div>';
+    dots();
+    if (window.innerWidth<900) $('#res3').scrollIntoView({behavior:RM?'auto':'smooth', block:'start'});
+  }
+  function renderSummary(){
+    var total = ROUNDS.reduce(function(a,r,k){ return a+(P.stars[k]||0); },0);
+    var rows = [
+      ['temp','기온','옷차림을 정해요. 몹시 더우면 야외 활동을 줄이고 물을 자주 마셔요. 추우면 외투와 목도리를 챙겨요.'],
+      ['wind','바람','알맞게 불면 연날리기와 빨래 말리기에 좋아요. 매우 세면 간판과 비닐하우스를 단단히 고정해요.'],
+      ['hum','습도','습도가 높으면 빨래가 잘 마르지 않고 음식에 곰팡이가 생기기 쉬워요. 이때 제습기를 써요.'],
+      ['cloud','구름의 양','맑은 날은 햇볕이 강해 모자와 선글라스를 챙겨요. 흐린 날은 햇볕이 약해요.'],
+      ['rain','강수량','비나 눈이 오면 우산을 챙기고 빗길과 눈길을 조심해요. 농부는 비 예보를 보고 논밭을 돌봐요.']
+    ];
+    box.innerHTML =
+      '<div class="summary"><div class="sum-top">'+MEDAL+'<div><div class="big-stars">'+total+'<small> / 15</small></div><p>다섯 날의 예보를 모두 읽었어요. 기상 요소가 우리 생활에 어떤 영향을 주는지 정리해 봐요.</p></div></div>'+
+      '<h3>예보관 수첩</h3><dl class="note">'+rows.map(function(r){ return '<dt data-el="'+r[0]+'">'+EI[r[0]]+r[1]+'</dt><dd>'+r[2]+'</dd>'; }).join('')+'</dl>'+
+      '<label class="refl-lab" for="refl">날씨 정보를 미리 알면 어떤 점이 좋을까요? 한두 문장으로 써 보세요.</label>'+
+      '<textarea id="refl" placeholder="여기에 써 보세요"></textarea>'+
+      '<div class="row-btns"><button type="button" class="btn primary" id="reflSave">저장하기</button><span class="saved" id="reflMsg" aria-live="polite"></span></div>'+
+      '<div class="row-btns"><button type="button" class="btn ghost" id="again">예보관 처음부터 다시 하기</button></div></div>';
+    $('#refl').value = P.reflection || '';
+    dots();
+    Scene.set(ROUNDS[4].w, {auto:true}, {caption:'예보관 활동을 모두 마쳤어요!'});
+  }
+  function show(){ if (ri>=ROUNDS.length){ ri=ROUNDS.length; renderSummary(); } else renderRound(); }
+  var started=false;
+  return { show: function(){ if (!started){ started=true; show(); } else if (ri>=ROUNDS.length) renderSummary(); else if (done){ var R=ROUNDS[ri]; var kd=kid(true); Scene.set(R.w, kd, {caption:'하루를 보냈어요. 결과를 확인해 보세요.'}); } else preview(); } };
+})();
+
+/* ---------- navigation ---------- */
+function marks(){
+  var d=[!!P.s1, P.missions.length>=MISSIONS.length, ROUNDS.every(function(r,k){ return P.stars[k]!=null; })];
+  $$('.step').forEach(function(b,k){ b.classList.toggle('done', d[k]); b.querySelector('.n').textContent = d[k] ? '✓' : String(k+1); });
+}
+function go(n){
+  $$('.stage').forEach(function(s){ s.hidden = s.id!=='s'+n; });
+  $$('.step').forEach(function(b){ if (+b.dataset.go===n) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); });
+  if (n===1) S1.show(); else if (n===2) S2.show(); else S3.show();
+  window.scrollTo({top:0, behavior:RM?'auto':'smooth'});
+}
+document.addEventListener('click', function(e){ var g=e.target.closest('[data-go]'); if (g){ go(+g.dataset.go); } });
+marks();
+go(1);
+})();
+</script>
+</body>
+</html>
