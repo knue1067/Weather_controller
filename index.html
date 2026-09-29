@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -167,7 +168,7 @@ input[type=range]:focus-visible::-moz-range-thumb{outline:3px solid var(--focus)
 .now-ic svg{width:44px;height:44px;display:block}
 .now-w{font:400 20px/1.2 var(--display)}
 .now-t{font-size:14px;color:var(--ink2)}
-.tbl-wrap{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:14px}
+.tbl-wrap{overflow-x:auto;max-width:100%;margin-top:12px;border:1px solid var(--line);border-radius:14px}
 table{border-collapse:collapse;width:100%;min-width:470px;font-size:14px}
 th,td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
 tbody tr:last-child td{border-bottom:0}
@@ -262,7 +263,8 @@ textarea{width:100%;min-height:92px;border:1.5px solid var(--line);border-radius
 
 @media (max-width:900px){
   .app{padding:0 14px 32px}
-  .main{grid-template-columns:1fr;gap:10px}
+  .main{grid-template-columns:minmax(0,1fr);gap:10px}
+  .main > *{min-width:0}
   .scene-col{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--paper);padding:6px 0 8px}
   .scene{width:min(100%,calc(36vh * 640 / 420));margin:0 auto;border-radius:18px}
   .scene-note{display:none}
@@ -322,6 +324,102 @@ textarea{width:100%;min-height:92px;border:1.5px solid var(--line);border-radius
 .q-short{display:none}
 @media (max-width:900px){.quest{white-space:nowrap;max-width:none}.q-long{display:none}.q-short{display:inline}.quest b{width:17px;height:17px;font-size:11px}}
 @media (max-width:900px){.quest{left:auto;right:8px;transform:none;animation:none;gap:6px;padding:5px 10px}.quest .q-badge{display:none}}
+
+/* ---------- level design ---------- */
+.stage-tag{font:600 13px var(--font);color:var(--ink2);background:var(--track);border-radius:999px;padding:4px 11px;white-space:nowrap}
+.tprog{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.tp{display:inline-flex;align-items:center;gap:4px;padding:4px 10px 4px 6px;border-radius:999px;font-size:12.5px;border:1.5px dashed var(--line);color:var(--ink2)}
+.tp svg{width:15px;height:15px;color:var(--c)}
+.tp b{font-weight:700}
+.tp.cur{border:2px solid var(--accent);background:var(--accent-soft);color:var(--ink)}
+.tp.done{border:1.5px solid var(--c);background:var(--c);color:#fff}
+.tp.done svg{color:#fff}
+.ctl .lock-lab{display:none}
+.ctl.locked{padding-top:10px;padding-bottom:10px;background:repeating-linear-gradient(135deg,transparent 0 8px,color-mix(in srgb,var(--ink) 3%,transparent) 8px 16px)}
+.ctl.locked > :not(.ctl-head){display:none}
+.ctl.locked .ctl-name{font-size:18px;color:var(--ink2)}
+.ctl.locked .ei{filter:grayscale(1);opacity:.6;width:30px;height:30px}
+.ctl.locked .ctl-val{font-size:19px;opacity:.7}
+.ctl.locked .ctl-head{align-items:center;flex-wrap:wrap}
+.ctl.locked .lock-lab{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--ink2);background:var(--track);border-radius:999px;padding:3px 10px 3px 8px;margin-left:10px}
+.lock-lab svg{width:13px;height:13px}
+.ctl-head .ctl-val{margin-left:auto}
+.goal-top{margin-top:12px;border:3px solid var(--accent);border-bottom:0;border-radius:18px 18px 0 0;background:var(--accent-soft);padding:12px 14px 10px;scroll-margin-top:16px}
+.ctl.cur{border-left:3px solid var(--accent);border-right:3px solid var(--accent);border-bottom-color:transparent;background:var(--surface)}
+.ctl.cur::before{left:3px}
+.goal-bot{border:3px solid var(--accent);border-top:1.5px dashed color-mix(in srgb,var(--accent) 70%,transparent);border-radius:0 0 18px 18px;background:var(--accent-soft);padding:10px 14px 12px;margin-bottom:12px;scroll-margin-bottom:16px}
+.goal-head{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.goal-n{font:400 14px var(--display);background:#1E3350;color:#fff;border-radius:999px;padding:2px 11px}
+.goal-name{display:inline-flex;align-items:center;gap:5px;font:400 18px var(--display);color:var(--c)}
+.goal-name svg{width:19px;height:19px}
+.goal-done{margin-left:auto;color:var(--ok);display:inline-flex}
+.goal-done svg{width:24px;height:24px}
+.goal-t{margin:0;font-size:16px;font-weight:600;line-height:1.5}
+.goal-now{margin:0;font-size:14.5px;color:var(--ink2)}
+.goal-now b{color:var(--ink)}
+.goal-hint{margin:6px 0 0;font-size:14.5px;display:flex;gap:8px;align-items:baseline}
+.goal-hint span{flex:none;font-size:12px;font-weight:700;color:#1E3350;background:var(--accent);border-radius:999px;padding:1px 8px}
+.goal-ok{display:flex;align-items:center;gap:7px;margin:0;font:400 19px var(--display);color:var(--ok)}
+.goal-ok svg{width:24px;height:24px}
+.goal-next{margin:4px 0 0;font-size:15.5px;font-weight:600}
+.goal-learn{margin:6px 0 12px;font-size:15px;line-height:1.55}
+.ctl.fresh,.rec.fresh{animation:fresh .9s ease both}
+@keyframes fresh{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
+.link-note{display:flex;gap:8px;align-items:flex-start;margin:10px 0 0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--cloud) 13%,var(--surface));border:1px solid color-mix(in srgb,var(--cloud) 45%,transparent);font-size:14px;font-weight:600;line-height:1.45}
+.link-note svg{width:18px;height:18px;flex:none;margin-top:1px;color:var(--cloud)}
+.link-note.pop{animation:appear .35s ease both}
+.ctl.flash{animation:rowflash 1.8s ease}
+.ctl.flash .ctl-val{animation:valpop .5s ease 3}
+@keyframes rowflash{0%,40%{background-color:color-mix(in srgb,var(--c) 22%,var(--surface))}100%{background-color:transparent}}
+@keyframes valpop{50%{transform:scale(1.15)}}
+.rtypes{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rtypes li{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 9px;border:1.5px dashed var(--line);border-radius:14px;font-size:13.5px;font-weight:600;text-align:center;position:relative;color:var(--ink2);word-break:keep-all;line-height:1.35}
+.rtypes li svg{width:34px;height:34px}
+.rtypes li.now{border:2px solid var(--accent);color:var(--ink)}
+.rtypes li.on{border:1.5px solid var(--ok);background:color-mix(in srgb,var(--ok) 9%,var(--surface));color:var(--ink)}
+.rtypes li.on::after{content:"✓";position:absolute;top:4px;right:9px;color:var(--ok);font-weight:800}
+.btn.primary.pulse{animation:bpulse 1.6s ease-in-out infinite}
+@keyframes bpulse{0%,100%{box-shadow:0 3px 0 #1E3350,0 0 0 0 rgba(245,183,0,.65)}55%{box-shadow:0 3px 0 #1E3350,0 0 0 10px rgba(245,183,0,0)}}
+.btn.sm{min-height:40px;padding:6px 16px;font-size:16px;flex:none}
+.step .n svg{width:14px;height:14px}
+.step.locked{opacity:.62}
+.step.locked .n{background:var(--track);color:var(--ink2)}
+.dot.locked{display:grid;place-items:center;opacity:.55;cursor:not-allowed;border-style:dashed}
+.dot svg{width:14px;height:14px}
+.hint b{color:var(--hum)}
+.q .now-tag{display:none;font:600 12px var(--font);background:var(--accent);color:#1E3350;border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:3px}
+.q.now .now-tag{display:inline-block}
+.q.now .tiles,.q.now .opts{outline:3px solid var(--accent);outline-offset:5px;border-radius:17px}
+.q .tiles,.q .opts{margin:0 5px}
+.quest strong{font-weight:800}
+.scene .badge.target .pulse{stroke-width:4;animation-duration:1.05s}
+.modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgba(10,20,34,.55)}
+.modal-card{width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);color:var(--ink);border-radius:22px;padding:26px 24px 22px;box-shadow:0 24px 60px rgba(0,0,0,.3);text-align:center;animation:pop .3s ease-out}
+.modal-card.small{width:min(380px,100%)}
+.m-logo{width:64px;height:64px}
+.modal-card h2{font:400 26px/1.25 var(--display);margin:8px 0 6px}
+.modal-card > p{margin:0 0 14px;color:var(--ink2);font-size:15.5px}
+.map{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:8px;text-align:left}
+.map li{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1.5px solid var(--line);border-radius:14px}
+.map .n{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#1E3350;font:400 17px var(--display);flex:none}
+.map b{display:block;font:400 18px var(--display)}
+.map div span{font-size:14px;color:var(--ink2)}
+.modal-card .modal-tip{font-size:14px}
+.qmark{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#FFC53D;border:1.5px solid #1E3350;color:#1E3350;font-size:12px;vertical-align:1px}
+.tp-btns{display:grid;gap:8px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:12px;width:max-content;max-width:calc(100% - 32px);padding:10px 12px 10px 18px;border-radius:16px;background:#1E3350;color:#fff;font-weight:600;font-size:15px;line-height:1.4;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast.pop{animation:toastIn .35s ease both}
+@media (min-width:901px){.toast{bottom:auto;top:86px}}
+.step.new{animation:stepglow 1.3s ease-in-out 5}
+@keyframes stepglow{0%,100%{box-shadow:0 0 0 0 rgba(245,183,0,0)}50%{box-shadow:0 0 0 5px rgba(245,183,0,.55)}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (max-width:900px){
+  .goal-top{scroll-margin-top:calc(36vh + 30px)}
+  .rec{scroll-margin-top:calc(36vh + 30px)}
+  #s2,#s3{scroll-margin-top:calc(36vh + 30px)}
+  .goal-t{font-size:15px}
+}
+@media (max-width:440px){.rtypes li{font-size:12.5px}.stage-tag{font-size:12px}.step.locked .n{display:grid;width:20px;height:20px;background:transparent}}
 </style>
 </head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -336,7 +434,7 @@ textarea{width:100%;min-height:92px;border:1.5px solid var(--line);border-radius
 </svg>
 <div class="app">
   <header class="top">
-    <div class="brand">
+    <div class="brand" id="brand">
       <svg viewBox="0 0 44 44" aria-hidden="true">
         <rect width="44" height="44" rx="13" fill="url(#iLogo)"/>
         <circle cx="28.5" cy="15.5" r="10" fill="#FFF3B0" opacity=".45"/>
@@ -611,6 +709,8 @@ textarea{width:100%;min-height:92px;border:1.5px solid var(--line);border-radius
             <g class="badge" data-info="wsock" transform="translate(574 184)"><circle class="pulse" r="10"/><circle r="10" fill="#FFC53D" stroke="#1E3350" stroke-width="1.6"/><text y="4.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1E3350">?</text></g>
             <g class="badge" data-info="thermo" transform="translate(572 238)"><circle class="pulse" r="10"/><circle r="10" fill="#FFC53D" stroke="#1E3350" stroke-width="1.6"/><text y="4.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1E3350">?</text></g>
             <g class="badge" data-info="gauge" transform="translate(626 298)"><circle class="pulse" r="10"/><circle r="10" fill="#FFC53D" stroke="#1E3350" stroke-width="1.6"/><text y="4.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1E3350">?</text></g>
+            <g class="badge" data-info="screen" transform="translate(526 242)"><circle class="pulse" r="10"/><circle r="10" fill="#FFC53D" stroke="#1E3350" stroke-width="1.6"/><text y="4.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1E3350">?</text></g>
+            <g class="badge" data-info="anemo" transform="translate(566 156)"><circle class="pulse" r="10"/><circle r="10" fill="#FFC53D" stroke="#1E3350" stroke-width="1.6"/><text y="4.3" text-anchor="middle" font-size="13" font-weight="800" fill="#1E3350">?</text></g>
           </g>
         </svg>
         <div class="caption" id="caption" aria-live="polite"></div>
@@ -623,22 +723,18 @@ textarea{width:100%;min-height:92px;border:1.5px solid var(--line);border-radius
     <div class="panel">
       <!-- 1. 날씨 만들기 -->
       <section class="stage" id="s1" aria-labelledby="t1">
-        <h2 id="t1">날씨 만들기</h2>
-        <p class="lead">막대를 밀고 버튼을 눌러 마을의 날씨를 바꿔 보세요. 다섯 가지 기상 요소를 모두 움직여 보세요. 그림 속 <b>?</b> 표시를 누르면 관측 기구를 알아볼 수 있어요.</p>
-        <div class="found">
-          <span class="found-n">찾은 기상 요소 <b id="foundN">0</b> / 5</span>
-          <div class="chips" id="chips1">
-            <span class="chip" data-el="temp">기온</span><span class="chip" data-el="wind">바람</span><span class="chip" data-el="hum">습도</span><span class="chip" data-el="cloud">구름의 양</span><span class="chip" data-el="rain">강수량</span>
-          </div>
-        </div>
+        <div class="stage-top"><h2 id="t1">날씨 만들기</h2><span class="stage-tag" id="s1tag"></span></div>
+        <p class="lead" id="s1lead">기상 요소를 하나씩 익혀 봐요. 노란 테두리 속 할 일을 해내면 다음 기상 요소가 열려요.</p>
+        <div class="tprog" id="tprog" aria-label="기상 요소 훈련 진행"></div>
         <div class="ctls" id="ctl1"></div>
         <div class="nudge" id="nudge1" hidden></div>
         <div class="rec" id="rec" hidden>
           <h3>날씨 기록장</h3>
-          <p class="sub">맑은 날, 비 오는 날, 눈 오는 날처럼 서로 다른 날씨를 세 가지 이상 만들어 기록하고 비교해 보세요.</p>
+          <p class="sub">기상 요소를 자유롭게 바꿔서 아래 세 가지 날씨를 만들고, 하나씩 기록해 보세요. 그 날씨에 어울리게 기온과 습도, 바람도 함께 바꿔 봐요.</p>
+          <ul class="rtypes" id="rtypes"></ul>
           <div class="now"><span class="now-ic" id="nowIc"></span><div><div class="now-w" id="nowW"></div><div class="now-t" id="nowT"></div></div></div>
           <div class="row-btns">
-            <button class="btn" id="recBtn" type="button">지금 날씨 기록하기</button>
+            <button class="btn primary" id="recBtn" type="button">지금 날씨 기록하기</button>
             <button class="btn ghost" id="recClear" type="button" hidden>기록 지우기</button>
           </div>
           <div class="tbl-wrap" id="recWrap" hidden>
@@ -648,9 +744,9 @@ textarea{width:100%;min-height:92px;border:1.5px solid var(--line);border-radius
             </table>
           </div>
           <div class="think" id="think" hidden>
-            <p class="q">기록장을 보고 이야기해 보세요. 비나 눈이 오는 날은 습도와 구름의 양이 어떤가요? 날씨를 기상 요소로 나타내면 무엇이 좋을까요?</p>
+            <p class="q">기록장을 비교해 보세요. 비나 눈이 오는 날은 맑은 날보다 습도와 구름의 양이 어떤가요? 날씨를 기상 요소로 나타내면 무엇이 좋을까요?</p>
             <details><summary>생각 확인하기</summary><p>비나 눈이 오는 날은 대체로 구름이 많고 습도가 높아요. 날씨를 기상 요소로 나타내면 구체적이고 정확하게 알 수 있고, 날짜나 지역끼리 비교하기도 쉬워요.</p></details>
-            <button class="btn primary" type="button" data-go="2">날씨 주문 받으러 가기</button>
+            <button class="btn primary" type="button" data-go="2">2단계 날씨 주문 받으러 가기</button>
           </div>
         </div>
       </section>
@@ -658,7 +754,7 @@ textarea{width:100%;min-height:92px;border:1.5px solid var(--line);border-radius
       <!-- 2. 날씨 주문 -->
       <section class="stage" id="s2" aria-labelledby="t2" hidden>
         <div class="stage-top"><h2 id="t2">날씨 주문</h2><div class="dots" id="mdots" aria-label="주문 목록"></div></div>
-        <p class="lead">마을 사람들의 부탁을 읽고, 알맞은 날씨를 기상 요소로 만들어 보내 주세요.</p>
+        <p class="lead">마을 사람들의 부탁을 읽고, 알맞은 날씨를 기상 요소로 만들어 보내 주세요. 주문을 하나 해결하면 다음 주문이 열려요.</p>
         <div class="order">
           <div class="avatar" id="oFace" aria-hidden="true"></div>
           <div><div class="who" id="oWho"></div><p class="say" id="oSay"></p></div>
@@ -673,11 +769,37 @@ textarea{width:100%;min-height:92px;border:1.5px solid var(--line);border-radius
       <!-- 3. 날씨 예보관 -->
       <section class="stage" id="s3" aria-labelledby="t3" hidden>
         <div class="stage-top"><h2 id="t3">날씨 예보관</h2><div class="dots" id="rdots" aria-label="예보 목록"></div></div>
-        <p class="lead">내일 날씨 예보를 읽고 옷차림과 준비물, 마을의 대비 방법을 골라요. 그림 속 날씨는 하루를 보낸 뒤에 나타나요.</p>
+        <p class="lead">내일 날씨 예보를 읽고 옷차림과 준비물, 마을의 대비 방법을 차례로 골라요. 그림 속 날씨는 하루를 보낸 뒤에 나타나요.</p>
         <div id="round"></div>
       </section>
     </div>
   </main>
+</div>
+<div class="modal" id="intro" hidden role="dialog" aria-modal="true" aria-labelledby="introT">
+  <div class="modal-card">
+    <svg class="m-logo" viewBox="0 0 44 44" aria-hidden="true"><rect width="44" height="44" rx="13" fill="url(#iLogo)"/><circle cx="28.5" cy="15.5" r="10" fill="#FFF3B0" opacity=".45"/><circle cx="28.5" cy="15.5" r="6.5" fill="url(#iSun)"/><path d="M10.5 34h19a6 6 0 0 0 .9-11.93A8.3 8.3 0 0 0 13.2 20.6 6.8 6.8 0 0 0 10.5 34Z" fill="url(#iCloud)"/><path d="M31 30.5h5.5M33 34.5h4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity=".85"/></svg>
+    <h2 id="introT">날씨 조종실에 온 걸 환영해요!</h2>
+    <p>기상 요소를 조종해 마을의 날씨를 바꾸고, 날씨가 우리 생활에 주는 영향을 알아봐요.</p>
+    <ol class="map">
+      <li><span class="n">1</span><div><b>날씨 만들기</b><span>기상 요소 다섯 가지를 하나씩 익혀요.</span></div></li>
+      <li><span class="n">2</span><div><b>날씨 주문</b><span>마을 사람들의 부탁에 맞는 날씨를 만들어요.</span></div></li>
+      <li><span class="n">3</span><div><b>날씨 예보관</b><span>예보를 읽고 옷차림과 준비물을 골라요.</span></div></li>
+    </ol>
+    <p class="modal-tip">한 단계를 마치면 다음 단계가 열려요. <b>노란 테두리</b>와 그림 속 <b class="qmark">?</b> 표시를 따라가 보세요.</p>
+    <button class="btn primary" id="introGo" type="button">시작하기</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+<div class="modal" id="tpanel" hidden role="dialog" aria-modal="true" aria-labelledby="tpT">
+  <div class="modal-card small">
+    <h2 id="tpT">선생님 메뉴</h2>
+    <p>수업 시연이나 기기 정리를 할 때만 써요.</p>
+    <div class="tp-btns">
+      <button class="btn" id="tpUnlock" type="button">모든 단계 열기</button>
+      <button class="btn" id="tpReset" type="button">진행 기록 지우고 처음부터</button>
+      <button class="btn ghost" id="tpClose" type="button">닫기</button>
+    </div>
+  </div>
 </div>
 <script>
 (function(){
@@ -701,7 +823,8 @@ function f1(v){ return (Math.round(v*10)/10).toString(); }
 
 /* ---------- storage ---------- */
 var KEY = 'weather-control-room-v1';
-var P = {found:[], records:[], s1:false, missions:[], stars:[], reflection:'', inst:[]};
+function freshP(){ return {records:[], s1:false, missions:[], stars:[], reflection:'', inst:[], tut:0, intro:false, unlockAll:false, stage:1}; }
+var P = freshP();
 try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved && typeof saved === 'object') { for (var k in P) if (saved[k] !== undefined) P[k] = saved[k]; } } catch(e) {}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(P)); } catch(e) {} }
 
@@ -847,7 +970,7 @@ var Scene = (function(){
   }
   function windCap(w){
     if (w.spd>=14) return (w.rain>0 ? '비바람이 매우 세서 우산이 뒤집히고 빨래가 날아가요.' : '바람이 매우 세서 빨래가 날아가고 나뭇가지가 부러져요. 걷기도 힘들어요.') + depthNote(w);
-    if (w.spd>=9) return '바람이 강해 나무 전체가 흔들리고 나뭇잎이 날려요. 우산을 쓰기 힘들어요.' + depthNote(w);
+    if (w.spd>=9) return '바람이 강해 나무 전체가 흔들리고 나뭇잎이 날려요.'+(w.rain>0?' 우산을 쓰기 힘들어요.':'') + depthNote(w);
     return '바람이 알맞게 불어 빨래가 펄럭이고 종이가 날려요.' + depthNote(w);
   }
   function autoCaption(w){
@@ -856,7 +979,7 @@ var Scene = (function(){
     if (w.rain>=20) return '비가 아주 많이 와요. 물이 불어난 곳에는 가지 않아요.';
     if (w.rain>0) return w.spd>=9 ? '비바람이 강해 우산을 쓰기 힘들어요.' : '비가 와서 우산을 쓰고 장화를 신었어요.';
     if (w.spd>=9) return windCap(w);
-    if (w.temp>=33) return '무척 더워요. 그늘에서 쉬고 물을 자주 마셔요.';
+    if (w.temp>=30) return '무척 더워요. 그늘에서 쉬고 물을 자주 마셔요.';
     if (w.temp<=-5) return '몹시 추워요. 입김이 하얗게 나와요.';
     if (w.hum>=80) return '습도가 높아 끈적끈적해요. 빨래가 잘 마르지 않아요.';
     if (w.spd>=5) return windCap(w);
@@ -877,7 +1000,6 @@ var Scene = (function(){
   }
 
   /* ---------- instrument guide ---------- */
-  var QUEST = ['compass','wsock','thermo','gauge'];
   var INFO = {
     compass:{name:'나침반', at:[56,128], text:'동서남북 방위를 알려 줘요. 초록 화살표는 바람이 불어 가는 쪽을 가리켜요.',
       now:function(w){ return w.spd===0 ? '지금은 바람이 없어요.' : '지금: '+w.dir+'풍 ('+w.dir+'쪽에서 불어와요)'; }},
@@ -894,16 +1016,17 @@ var Scene = (function(){
     screen:{name:'백엽상', at:[526,256], text:'햇빛을 가리고 바람이 잘 통하는 흰 상자예요. 안에서 기온과 습도를 재요.',
       now:function(w){ return '지금: 기온 '+w.temp+' ℃, 습도 '+w.hum+' %'; }}
   };
-  var bubbleTimer=null, questTimer=null, openKey=null;
+  var bubbleTimer=null, openKey=null, G={target:null, pill:'', optional:false}, onInst=null;
+  var OPTIONAL=['compass','anemo'];
   function syncGuide(){
-    $$('.badge', E.badges).forEach(function(b){ b.style.display = P.inst.indexOf(b.dataset.info)>=0 ? 'none' : ''; });
-    $$('[data-tag]', E.tags).forEach(function(t){ t.style.opacity = P.inst.indexOf(t.dataset.tag)>=0 ? 1 : 0; });
-    var n = QUEST.filter(function(k){ return P.inst.indexOf(k)>=0; }).length;
-    if (O.neutral || n>=QUEST.length && !questTimer){ quest.hidden=true; return; }
-    if (n<QUEST.length){
-      quest.hidden=false;
-      quest.innerHTML='<span class="q-badge">?</span><span class="q-long">그림 속 <b>?</b>를 눌러 관측 기구를 알아보세요</span><span class="q-short"><b>?</b>를 눌러 관측 기구 알아보기</span><span class="q-dots">'+QUEST.map(function(k){ return '<i class="'+(P.inst.indexOf(k)>=0?'on':'')+'"></i>'; }).join('')+'</span>';
-    }
+    $$('.badge', E.badges).forEach(function(b){
+      var k=b.dataset.info, show = G.target ? k===G.target : (G.optional && OPTIONAL.indexOf(k)>=0 && P.inst.indexOf(k)<0);
+      b.style.display = show ? '' : 'none';
+      b.classList.toggle('target', k===G.target);
+    });
+    $$('[data-tag]', E.tags).forEach(function(t){ t.style.opacity = (P.inst.indexOf(t.dataset.tag)>=0 || t.dataset.tag===G.target) ? 1 : 0; });
+    if (O.neutral || !G.pill){ quest.hidden=true; return; }
+    quest.hidden=false; quest.innerHTML='<span class="q-badge">?</span><span>'+G.pill+'</span>';
   }
   function placeBubble(key){
     var a=INFO[key].at, rect=scene.getBoundingClientRect(), sx=rect.width/640, sy=rect.height/420;
@@ -921,16 +1044,10 @@ var Scene = (function(){
     $('#bNow').textContent = O.neutral ? '예보를 확인하고 하루를 보내면 볼 수 있어요.' : I.now(W);
     bubble.hidden=false; placeBubble(key);
     bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop');
-    bubbleTimer=setTimeout(hideInfo, 7000);
-    if (P.inst.indexOf(key)<0){
-      P.inst.push(key); save();
-      var done = QUEST.every(function(k){ return P.inst.indexOf(k)>=0; });
-      if (done && QUEST.indexOf(key)>=0){
-        quest.hidden=false; quest.innerHTML='<span class="q-badge ok">✓</span><span>관측 기구를 모두 찾았어요!</span>';
-        questTimer=setTimeout(function(){ questTimer=null; syncGuide(); }, 3500);
-      }
-      syncGuide();
-    }
+    bubbleTimer=setTimeout(hideInfo, 8000);
+    if (P.inst.indexOf(key)<0){ P.inst.push(key); save(); }
+    syncGuide();
+    if (onInst) onInst(key);
   }
   function hideInfo(){ bubble.hidden=true; openKey=null; clearTimeout(bubbleTimer); }
   $('#bClose').addEventListener('click', hideInfo);
@@ -1412,6 +1529,9 @@ var Scene = (function(){
   if (!RM) requestAnimationFrame(frame);
   return {
     set: function(w,k,o){ W=copy(w); K=k||{auto:true}; O=o||{}; render(); },
+    guide: function(g){ G={target:(g&&g.target)||null, pill:(g&&g.pill)||'', optional:!!(g&&g.optional)}; syncGuide(); },
+    onInst: function(fn){ onInst=fn; },
+    hideInfo: function(){ hideInfo(); },
     reacts: reacts
   };
 })();
@@ -1424,30 +1544,35 @@ function ctlHTML(){
   }).join('');
   var segs=CLOUDS.map(function(c,i){ return '<button type="button" data-cloud="'+i+'" aria-pressed="false">'+[IC.sun,IC.few,IC.many,IC.over][i]+'<span>'+c+'</span></button>'; }).join('');
   return ''+
-  '<div class="ctl" data-el="temp"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.temp+'</span>기온</span><output class="ctl-val" data-out="temp"></output></div>'+
+  '<div class="ctl" data-el="temp"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.temp+'</span>기온</span><output class="ctl-val" data-out="temp"></output>'+'<span class="lock-lab">'+LOCK_SVG+'훈련하면 열려요</span>'+'</div>'+
     '<p class="ctl-def">공기의 따뜻하고 차가운 정도</p>'+
     '<input type="range" class="temp-range" data-in="temp" min="-10" max="38" step="1" aria-label="기온, 섭씨 도">'+
     '<div class="scale"><span>춥다</span><span>덥다</span></div></div>'+
-  '<div class="ctl" data-el="wind"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.wind+'</span>바람</span><output class="ctl-val" data-out="wind"></output></div>'+
+  '<div class="ctl" data-el="wind"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.wind+'</span>바람</span><output class="ctl-val" data-out="wind"></output>'+'<span class="lock-lab">'+LOCK_SVG+'훈련하면 열려요</span>'+'</div>'+
     '<p class="ctl-def">바람이 불어오는 방향(풍향)과 빠르기(풍속)</p>'+
     '<div class="wind-row"><div class="dirpad" role="group" aria-label="풍향: 바람이 불어오는 쪽">'+pad+'</div>'+
     '<div class="spd"><div class="spd-lab">빠르기 <b data-out="spdword"></b></div>'+
     '<input type="range" data-in="spd" min="0" max="20" step="1" aria-label="풍속, 초속 미터">'+
     '<div class="scale"><span>약하게</span><span>세게</span></div></div></div>'+
     '<p class="ctl-tip">바람이 불어오는 쪽을 눌러요. 서쪽에서 불어오는 바람은 서풍이에요.</p></div>'+
-  '<div class="ctl" data-el="hum"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.hum+'</span>습도</span><output class="ctl-val" data-out="hum"></output></div>'+
+  '<div class="ctl" data-el="hum"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.hum+'</span>습도</span><output class="ctl-val" data-out="hum"></output>'+'<span class="lock-lab">'+LOCK_SVG+'훈련하면 열려요</span>'+'</div>'+
     '<p class="ctl-def">공기 중에 수증기가 포함된 정도</p>'+
     '<input type="range" data-in="hum" min="10" max="100" step="5" aria-label="습도, 퍼센트">'+
     '<div class="scale"><span>건조하다</span><span>습하다</span></div></div>'+
-  '<div class="ctl" data-el="cloud"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.cloud+'</span>구름의 양</span><output class="ctl-val" data-out="cloud"></output></div>'+
+  '<div class="ctl" data-el="cloud"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.cloud+'</span>구름의 양</span><output class="ctl-val" data-out="cloud"></output>'+'<span class="lock-lab">'+LOCK_SVG+'훈련하면 열려요</span>'+'</div>'+
     '<p class="ctl-def">하늘에 떠 있는 구름의 양, 맑거나 흐린 정도</p>'+
-    '<div class="seg" role="group" aria-label="구름의 양">'+segs+'</div></div>'+
-  '<div class="ctl" data-el="rain"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.rain+'</span>강수량</span><output class="ctl-val" data-out="rain"></output></div>'+
+    '<div class="seg" role="group" aria-label="구름의 양">'+segs+'</div>'+
+    '<p class="link-note" data-link hidden></p></div>'+
+  '<div class="ctl" data-el="rain"><div class="ctl-head"><span class="ctl-name"><span class="ei">'+EI.rain+'</span>강수량</span><output class="ctl-val" data-out="rain"></output>'+'<span class="lock-lab">'+LOCK_SVG+'훈련하면 열려요</span>'+'</div>'+
     '<p class="ctl-def">비나 눈 등이 내린 양</p>'+
     '<input type="range" data-in="rain" min="0" max="30" step="1" aria-label="강수량, 밀리미터">'+
     '<div class="scale"><span>0 mm</span><span>30 mm</span></div>'+
-    '<p class="ctl-tip" data-rain-tip hidden>기온이 0 ℃ 이하라 눈이 내려요. 눈은 녹여서 물의 양으로 강수량을 재요.</p></div>';
+    '<p class="ctl-tip" data-rain-tip hidden>기온이 0 ℃ 이하라 눈이 내려요. 눈은 녹여서 물의 양으로 강수량을 재요.</p>'+
+    '<p class="link-note" data-link hidden></p></div>';
 }
+var CLOUD_MIN = 2; /* 비나 눈이 오려면 적어도 '구름 많음' */
+var LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>';
+var LINK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 function Controls(root, getW, onChange){
   root.innerHTML = ctlHTML();
   var q=function(s){ return root.querySelector(s); };
@@ -1456,9 +1581,26 @@ function Controls(root, getW, onChange){
   inT.addEventListener('input', function(){ getW().temp=+inT.value; sync(); onChange('temp'); });
   inH.addEventListener('input', function(){ getW().hum=+inH.value; sync(); onChange('hum'); });
   inS.addEventListener('input', function(){ getW().spd=+inS.value; sync(); onChange('wind'); });
-  inR.addEventListener('input', function(){ getW().rain=+inR.value; sync(); onChange('rain'); });
+  inR.addEventListener('input', function(){
+    var w=getW(), was=w.cloud; w.rain=+inR.value;
+    if (w.rain>0 && w.cloud<CLOUD_MIN){ w.cloud=CLOUD_MIN; note('rain','cloud', josa(w.temp<=0?'눈':'비','은','는')+' 구름에서 내려요. 그래서 구름의 양이 ‘'+CLOUDS[was]+'’에서 ‘'+CLOUDS[w.cloud]+'’으로 늘었어요.'); }
+    sync(); onChange('rain');
+  });
   $$('[data-dir]',root).forEach(function(b){ b.addEventListener('click', function(){ var w=getW(); w.dir=b.dataset.dir; if (w.spd===0) w.spd=3; sync(); onChange('wind'); }); });
-  $$('[data-cloud]',root).forEach(function(b){ b.addEventListener('click', function(){ getW().cloud=+b.dataset.cloud; sync(); onChange('cloud'); }); });
+  $$('[data-cloud]',root).forEach(function(b){ b.addEventListener('click', function(){
+    var w=getW(), fall=w.temp<=0?'눈':'비'; w.cloud=+b.dataset.cloud;
+    if (w.cloud<CLOUD_MIN && w.rain>0){ w.rain=0; note('cloud','rain','구름이 걷히자 '+josa(fall,'이','가')+' 그쳤어요. 구름이 적으면 비나 눈이 내리지 않아 강수량이 0 mm가 되었어요.'); }
+    sync(); onChange('cloud');
+  }); });
+  var noteTimer=null;
+  function note(from, to, text){
+    $$('[data-link]',root).forEach(function(n){ n.hidden=true; });
+    var n=q('.ctl[data-el="'+from+'"] [data-link]');
+    n.innerHTML=LINK_SVG+'<span>'+text+'</span>'; n.hidden=false;
+    n.classList.remove('pop'); void n.offsetWidth; n.classList.add('pop');
+    var v=q('.ctl[data-el="'+to+'"]'); v.classList.remove('flash'); void v.offsetWidth; v.classList.add('flash');
+    clearTimeout(noteTimer); noteTimer=setTimeout(function(){ n.hidden=true; }, 6000);
+  }
   function sync(){
     var w=getW();
     inT.value=w.temp; inH.value=w.hum; inS.value=w.spd; inR.value=w.rain; [inT,inH,inS,inR].forEach(fill);
@@ -1475,12 +1617,39 @@ function Controls(root, getW, onChange){
   }
   return {
     sync: sync,
-    highlight: function(keys){ $$('.ctl',root).forEach(function(c){ c.classList.toggle('hl', keys.indexOf(c.dataset.el)>-1); }); }
+    highlight: function(keys){ $$('.ctl',root).forEach(function(c){ c.classList.toggle('hl', keys.indexOf(c.dataset.el)>-1); }); },
+    lock: function(open, cur){ $$('.ctl',root).forEach(function(c){ var el=c.dataset.el, lk=open.indexOf(el)<0; c.classList.toggle('locked', lk); c.classList.toggle('cur', el===cur); if (lk) c.setAttribute('inert',''); else c.removeAttribute('inert'); }); },
+    row: function(el){ return q('.ctl[data-el="'+el+'"]'); }
   };
 }
 
 /* ---------- data ---------- */
 var MISSIONS = [
+  {id:'storm', face:'📺', who:'뉴스 기상 캐스터',
+   say:'시청자들에게 강풍 주의보가 내려지는 날씨를 보여 주려고 해요. 바람이 아주 세게 부는 날을 만들어 주세요.',
+   start:{temp:16,hum:50,dir:'서',spd:3,cloud:1,rain:0}, key:['wind'],
+   rules:[
+     {el:'wind', ok:function(w){return w.spd>=14;}, yes:'풍속이 14 m/s 이상이면 강풍 주의보가 내려질 수 있어요.', no:function(w){return '풍속 '+w.spd+' m/s로는 부족해요. 빠르기를 매우 강함(14 m/s 이상)까지 올려 보세요.';}}
+   ],
+   learn:'바람이 강하게 분다는 예보가 있으면 간판, 화분, 비닐하우스 같은 시설물을 단단히 고정해 피해를 막아요.'},
+  {id:'snow', face:'⛄', who:'동생 하준이',
+   say:'나 눈사람 만들고 싶어! 눈이 펑펑 내렸으면 좋겠다.',
+   start:{temp:12,hum:55,dir:'북서',spd:3,cloud:1,rain:0}, key:['temp','rain','cloud'],
+   rules:[
+     {el:'temp', ok:function(w){return w.temp<=0;}, yes:'기온이 0 ℃ 이하라 눈이 내려요.', no:function(w){return '기온이 '+w.temp+' ℃라 내려도 비가 돼요. 0 ℃ 이하로 내려 보세요.';}},
+     {el:'rain', ok:function(w){return w.rain>=3;}, yes:'눈사람을 만들 만큼 눈이 내려요.', no:function(w){return w.rain===0?'아직 아무것도 내리지 않아요. 강수량을 올려 보세요.':'눈이 조금밖에 안 와요. 강수량을 3 mm 이상 올려 보세요.';}},
+     {el:'cloud', ok:function(w){return w.cloud>=2;}, yes:'눈이 내리니 구름이 많아요. 눈도 구름에서 내려요.', no:'구름이 거의 없으면 눈이 내리지 않아요.'}
+   ],
+   learn:'기온이 0 ℃ 이하일 때는 비 대신 눈이 내려요. 눈이 내린 양도 녹여서 물의 양으로 재어 강수량으로 나타내요.'},
+  {id:'kite', face:'🪁', who:'연날리기 대회 진행자', kite:true,
+   say:'연이 운동장 동쪽 강가 쪽으로 높이 날아가야 해요. 바람이 알맞게 불게 해 주세요.',
+   start:{temp:15,hum:45,dir:'동',spd:1,cloud:1,rain:0}, key:['wind','rain'],
+   rules:[
+     {el:'wind', ok:function(w){return w.dir==='서';}, yes:'서풍은 서쪽에서 불어오는 바람이라 연이 동쪽으로 날아가요.', no:function(w){return w.dir==='동'?'동풍은 동쪽에서 불어오는 바람이에요. 연이 서쪽으로 날아가요!':w.dir+'풍은 '+w.dir+'쪽에서 불어오는 바람이에요. 연이 동쪽으로 가려면 바람이 어느 쪽에서 불어와야 할까요?';}},
+     {el:'wind', ok:function(w){return w.spd>=3 && w.spd<=8;}, yes:'바람의 빠르기가 연을 날리기에 알맞아요.', no:function(w){return w.spd<3?'바람이 너무 약해 연이 뜨지 않아요.':'바람이 너무 세서 연줄이 끊어질 수 있어요. 빠르기를 보통으로 맞춰 보세요.';}},
+     {el:'rain', ok:function(w){return w.rain===0;}, yes:'비가 오지 않아요.', no:'비가 오면 종이로 만든 연이 젖어요.'}
+   ],
+   learn:'풍향은 바람이 불어오는 방향이에요. 서풍은 서쪽에서 불어와 동쪽으로 불어 가요.'},
   {id:'laundry', face:'🧺', who:'세탁소 사장님',
    say:'손님이 맡긴 이불을 밖에 널었어요. 해가 지기 전에 바싹 말랐으면 좋겠어요.',
    start:{temp:18,hum:85,dir:'남동',spd:0,cloud:2,rain:0}, key:['hum','rain','wind'],
@@ -1496,28 +1665,10 @@ var MISSIONS = [
    rules:[
      {el:'rain', ok:function(w){return w.rain>=10;}, yes:'논을 적실 만큼 비가 많이 내려요.', no:function(w){return w.rain===0?'아직 비가 오지 않아요. 강수량을 올려 보세요.':'강수량 '+w.rain+' mm는 논을 적시기에 부족해요. 10 mm 이상 내려 보세요.';}},
      {el:'temp', ok:function(w){return w.temp>0;}, yes:'기온이 0 ℃보다 높아 비로 내려요.', no:'기온이 0 ℃ 이하라 비 대신 눈이 내려요. 논에는 비가 필요해요.'},
-     {el:'cloud', ok:function(w){return w.cloud>=2;}, yes:'구름이 많아요. 비는 구름에서 내려요.', no:'구름이 거의 없는데 비가 올까요? 비는 구름에서 내리니 구름의 양을 늘려 보세요.'},
+     {el:'cloud', ok:function(w){return w.cloud>=2;}, yes:'비가 내리니 구름이 많아요. 비는 구름에서 내려요.', no:'구름이 거의 없으면 비가 내리지 않아요.'},
      {el:'hum', ok:function(w){return w.hum>=70;}, yes:'비 오는 날답게 습도가 높아요.', no:function(w){return '습도 '+w.hum+' %는 비 오는 날치고 낮아요. 비가 오는 날은 공기 중에 수증기가 많아 습도가 높아요.';}}
    ],
    learn:'비가 오는 날은 맑은 날보다 구름이 많고 습도가 높아요. 비 예보를 보고 농부는 논밭에 물을 대는 계획을 조절해요.'},
-  {id:'snow', face:'⛄', who:'동생 하준이',
-   say:'나 눈사람 만들고 싶어! 눈이 펑펑 내렸으면 좋겠다.',
-   start:{temp:12,hum:55,dir:'북서',spd:3,cloud:1,rain:0}, key:['temp','rain','cloud'],
-   rules:[
-     {el:'temp', ok:function(w){return w.temp<=0;}, yes:'기온이 0 ℃ 이하라 눈이 내려요.', no:function(w){return '기온이 '+w.temp+' ℃라 내려도 비가 돼요. 0 ℃ 이하로 내려 보세요.';}},
-     {el:'rain', ok:function(w){return w.rain>=3;}, yes:'눈사람을 만들 만큼 눈이 내려요.', no:function(w){return w.rain===0?'아직 아무것도 내리지 않아요. 강수량을 올려 보세요.':'눈이 조금밖에 안 와요. 강수량을 3 mm 이상 올려 보세요.';}},
-     {el:'cloud', ok:function(w){return w.cloud>=2;}, yes:'구름이 하늘을 덮었어요.', no:'눈도 구름에서 내려요. 구름의 양을 늘려 보세요.'}
-   ],
-   learn:'기온이 0 ℃ 이하일 때는 비 대신 눈이 내려요. 눈이 내린 양도 녹여서 물의 양으로 재어 강수량으로 나타내요.'},
-  {id:'kite', face:'🪁', who:'연날리기 대회 진행자', kite:true,
-   say:'연이 운동장 동쪽 강가 쪽으로 높이 날아가야 해요. 바람이 알맞게 불게 해 주세요.',
-   start:{temp:15,hum:45,dir:'동',spd:1,cloud:1,rain:0}, key:['wind','rain'],
-   rules:[
-     {el:'wind', ok:function(w){return w.dir==='서';}, yes:'서풍은 서쪽에서 불어오는 바람이라 연이 동쪽으로 날아가요.', no:function(w){return w.dir==='동'?'동풍은 동쪽에서 불어오는 바람이에요. 연이 서쪽으로 날아가요!':w.dir+'풍은 '+w.dir+'쪽에서 불어오는 바람이에요. 연이 동쪽으로 가려면 바람이 어느 쪽에서 불어와야 할까요?';}},
-     {el:'wind', ok:function(w){return w.spd>=3 && w.spd<=8;}, yes:'바람의 빠르기가 연을 날리기에 알맞아요.', no:function(w){return w.spd<3?'바람이 너무 약해 연이 뜨지 않아요.':'바람이 너무 세서 연줄이 끊어질 수 있어요. 빠르기를 보통으로 맞춰 보세요.';}},
-     {el:'rain', ok:function(w){return w.rain===0;}, yes:'비가 오지 않아요.', no:'비가 오면 종이로 만든 연이 젖어요.'}
-   ],
-   learn:'풍향은 바람이 불어오는 방향이에요. 서풍은 서쪽에서 불어와 동쪽으로 불어 가요.'},
   {id:'beach', face:'🏖️', who:'해수욕장 안전요원',
    say:'해수욕하기 딱 좋은 한여름 날을 부탁해요. 파도가 높으면 위험하니 조심해 주세요.',
    start:{temp:19,hum:70,dir:'남',spd:9,cloud:3,rain:0}, key:['temp','cloud','wind','rain'],
@@ -1527,14 +1678,7 @@ var MISSIONS = [
      {el:'rain', ok:function(w){return w.rain===0;}, yes:'비가 오지 않아요.', no:'비가 오면 해수욕을 하기 어려워요.'},
      {el:'wind', ok:function(w){return w.spd<=5;}, yes:'바람이 약해 파도가 잔잔해요.', no:function(w){return '바람이 '+w.spd+' m/s로 세면 파도가 높아져 위험해요. 약하게 줄여 보세요.';}}
    ],
-   learn:'맑고 더운 날에는 물놀이 같은 야외 활동을 많이 해요. 이런 날에는 모자, 자외선 차단제, 시원한 음료가 많이 팔려요.'},
-  {id:'storm', face:'📺', who:'뉴스 기상 캐스터',
-   say:'시청자들에게 강풍 주의보가 내려지는 날씨를 보여 주려고 해요. 바람이 아주 세게 부는 날을 만들어 주세요.',
-   start:{temp:16,hum:50,dir:'서',spd:3,cloud:1,rain:0}, key:['wind'],
-   rules:[
-     {el:'wind', ok:function(w){return w.spd>=14;}, yes:'풍속이 14 m/s 이상이면 강풍 주의보가 내려질 수 있어요.', no:function(w){return '풍속 '+w.spd+' m/s로는 부족해요. 빠르기를 매우 강함(14 m/s 이상)까지 올려 보세요.';}}
-   ],
-   learn:'바람이 강하게 분다는 예보가 있으면 간판, 화분, 비닐하우스 같은 시설물을 단단히 고정해 피해를 막아요.'}
+   learn:'맑고 더운 날에는 물놀이 같은 야외 활동을 많이 해요. 이런 날에는 모자, 자외선 차단제, 시원한 음료가 많이 팔려요.'}
 ];
 
 var CLOTHES = [['short','반팔'],['long','긴팔'],['coat','두꺼운 외투']];
@@ -1593,30 +1737,131 @@ function li(mark, el, msg){ var m={ok:'✓',no:'✕',meh:'!'}[mark]; return '<li
 $$('.chip[data-el], th[data-el]').forEach(function(e){ e.insertAdjacentHTML('afterbegin', EI[e.dataset.el]); });
 
 /* ---------- stage 1: 날씨 만들기 ---------- */
+var SNOW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5 12 7l2.5-2.5M9.5 19.5 12 17l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var TUT = [
+  {el:'temp', name:'기온', open:['temp'], inst:'thermo', instName:'온도계', see:'지금 기온을',
+   goal:'기온 막대를 오른쪽으로 밀어 아주 더운 날(30 ℃ 이상)을 만들어 보세요.',
+   ok:function(w){ return w.temp>=30; },
+   now:function(w){ return '지금 <b>'+w.temp+' ℃</b> · 목표 30 ℃ 이상'; },
+   hint:function(w){ return '막대를 더 오른쪽으로 밀어 보세요.'; },
+   learn:'기온은 공기의 따뜻하고 차가운 정도예요. 온도계로 재고 ℃(섭씨도)로 나타내요. 기온이 높으면 아이가 땀을 흘리고 옷차림도 바뀌어요.'},
+  {el:'wind', name:'바람', open:['temp','wind'], inst:'wsock', instName:'바람자루', see:'바람이 어느 쪽으로 불어 가는지',
+   goal:'풍향 버튼에서 ‘북’을 누르고, 빠르기를 ‘강함’(9~13 m/s)으로 맞춰 보세요.',
+   ok:function(w){ return w.dir==='북' && w.spd>=9 && w.spd<=13; },
+   now:function(w){ return '지금 <b>'+(w.spd===0?'바람 없음':w.dir+'풍 '+w.spd+' m/s('+spdWord(w.spd)+')')+'</b> · 목표 북풍, 강함'; },
+   hint:function(w){ if (w.dir!=='북') return '풍향 버튼 윗줄 가운데의 ‘북’을 눌러요.'; if (w.spd<9) return '빠르기 막대를 더 오른쪽으로 밀어요.'; return '너무 세요! ‘강함’이 되도록 조금 줄여요.'; },
+   learn:'북쪽에서 불어오는 바람을 북풍이라고 해요. 풍향은 바람이 불어오는 방향이에요. 그래서 바람자루와 나뭇잎은 반대쪽인 남쪽(우리 쪽)으로 날려요.'},
+  {el:'hum', name:'습도', open:['temp','wind','hum'], inst:'screen', instName:'백엽상', see:'무엇을 재는 곳인지',
+   goal:'습도를 80 % 이상으로 높여 보세요. 빨래와 집 창문이 어떻게 바뀌나요?',
+   ok:function(w){ return w.hum>=80; },
+   now:function(w){ return '지금 <b>'+w.hum+' %</b> · 목표 80 % 이상'; },
+   hint:function(w){ return '습도 막대를 더 오른쪽으로 밀어 보세요.'; },
+   learn:'습도는 공기 중에 수증기가 포함된 정도예요. %(퍼센트)로 나타내요. 습도가 높으면 빨래에서 물이 떨어지고 창문에 물방울이 맺혀요.'},
+  {el:'rain', name:'강수량', open:['temp','wind','hum','rain'], inst:'gauge', instName:'우량계', see:'비가 얼마나 내렸는지',
+   goal:'강수량 막대를 올려 비를 내려 보세요(5 mm 이상). 하늘도 함께 살펴봐요.',
+   ok:function(w){ return w.rain>=5 && w.temp>0; },
+   now:function(w){ return '지금 <b>'+w.rain+' mm'+(w.rain>0?(w.temp<=0?', 눈':', 비'):'')+'</b> · 목표 비 5 mm 이상'; },
+   hint:function(w){ if (w.temp<=0) return '지금은 기온이 0 ℃ 이하라 눈이 와요. 비가 오도록 기온을 올려요.'; return '강수량 막대를 5 mm 이상으로 올려요.'; },
+   learn:'강수량은 비나 눈이 내린 양이에요. 우량계로 재고 mm(밀리미터)로 나타내요. 비가 오자 구름의 양도 늘었지요? 비는 구름에서 내리기 때문이에요.'},
+  {el:'cloud', name:'구름의 양', open:['temp','wind','hum','rain','cloud'], inst:null,
+   goal:'구름의 양 버튼으로 하늘을 ‘맑음’으로 바꿔 보세요. 내리던 비는 어떻게 될까요?',
+   ok:function(w){ return w.cloud===0; },
+   now:function(w){ return '지금 <b>'+CLOUDS[w.cloud]+', 강수량 '+w.rain+' mm</b> · 목표 맑음'; },
+   hint:function(){ return '해가 그려진 ‘맑음’ 버튼을 눌러요.'; },
+   learn:'구름의 양은 하늘을 보고 맑음, 구름 조금, 구름 많음, 흐림으로 나타내요. 구름이 적으면 비나 눈이 내리지 않아요.'},
+  {el:'rain', name:'눈', snow:true, open:['temp','wind','hum','rain','cloud'], inst:null,
+   goal:'이번엔 눈을 내려 볼까요? 강수량을 올리고, 기온을 0 ℃ 이하로 내려 보세요.',
+   ok:function(w){ return w.rain>0 && w.temp<=0; },
+   now:function(w){ return '지금 <b>기온 '+w.temp+' ℃, '+(w.rain>0?(w.temp<=0?'눈':'비')+' '+w.rain+' mm':'내리지 않음')+'</b> · 목표 눈'; },
+   hint:function(w){ if (w.rain===0) return '먼저 강수량 막대를 올려요.'; return '기온 막대를 왼쪽으로 밀어 0 ℃ 이하로 내려요.'; },
+   learn:'기온이 0 ℃ 이하이면 비 대신 눈이 내려요. 눈도 녹인 물의 양으로 재어 강수량으로 나타내요.'}
+];
+var RT = [
+  {label:'비나 눈이 오지 않는 날', ok:function(w){ return w.rain===0; }, ic:function(){ return IC.sun; }},
+  {label:'비 오는 날', ok:function(w){ return w.rain>0 && w.temp>0; }, ic:function(){ return IC.rain; }},
+  {label:'눈 오는 날', ok:function(w){ return w.rain>0 && w.temp<=0; }, ic:function(){ return IC.snow; }}
+];
 var S1 = (function(){
-  var W = {temp:20,hum:60,dir:'서',spd:2,cloud:1,rain:0};
-  var found = {}; (P.found||[]).forEach(function(k){ found[k]=true; });
-  var ctl = Controls($('#ctl1'), function(){ return W; }, function(k){
-    if (!found[k]){ found[k]=true; P.found=Object.keys(found); save(); }
+  var W, tut, phase, touched;
+  var root=$('#ctl1');
+  var ctl = Controls(root, function(){ return W; }, function(k){ changed(k); });
+  var top=document.createElement('div'); top.className='goal-top';
+  var bot=document.createElement('div'); bot.className='goal-bot'; bot.setAttribute('aria-live','polite');
+  function init(){
+    W = {temp:20,hum:60,dir:'서',spd:2,cloud:1,rain:0};
+    if (P.s1 && !P.tut) P.tut = TUT.length;
+    tut = Math.min(P.tut||0, TUT.length); phase='goal'; touched=false;
+  }
+  init();
+  function free(){ return tut>=TUT.length; }
+  function openList(){ return (P.unlockAll || free()) ? ['temp','wind','hum','cloud','rain'] : TUT[tut].open; }
+  function progress(){
+    $('#tprog').innerHTML = TUT.map(function(s,k){
+      var st = k<tut?'done':k===tut?'cur':'todo';
+      return '<span class="tp '+st+'" data-el="'+s.el+'">'+(s.snow?SNOW_SVG:EI[s.el])+'<b>'+s.name+'</b></span>';
+    }).join('');
+    $('#s1tag').textContent = free() ? '날씨 기록하기' : '기상 요소 훈련 '+(tut+1)+' / '+TUT.length;
+    $('#s1lead').textContent = free() ? '기상 요소를 모두 익혔어요! 이제 자유롭게 날씨를 만들어 날씨 기록장을 채워 보세요.' : '기상 요소를 하나씩 익혀 봐요. 노란 테두리 속 할 일을 해내면 다음 기상 요소가 열려요.';
+  }
+  function renderGoal(){
+    if (free()){ top.remove(); bot.remove(); ctl.lock(openList(), null); if (CUR===1) Scene.guide({optional:true}); return; }
+    var s=TUT[tut];
+    top.dataset.el=s.el; bot.dataset.phase=phase;
+    top.innerHTML = '<div class="goal-head"><span class="goal-n">훈련 '+(tut+1)+'</span><span class="goal-name" data-el="'+s.el+'">'+(s.snow?SNOW_SVG:EI[s.el])+s.name+'</span>'+(phase!=='goal'?'<span class="goal-done">'+CHECK_SVG+'</span>':'')+'</div><p class="goal-t">'+s.goal+'</p>';
+    var h;
+    if (phase==='goal') h = '<p class="goal-now">'+s.now(W)+'</p>' + (touched ? '<p class="goal-hint"><span>도움말</span>'+s.hint(W)+'</p>' : '');
+    else if (phase==='inst') h = '<p class="goal-ok">'+CHECK_SVG+'잘했어요!</p><p class="goal-next">이번엔 그림 속 <b>'+josa(s.instName,'을','를')+'</b> 눌러 '+s.see+' 확인해 보세요.</p>';
+    else h = '<p class="goal-ok">'+CHECK_SVG+'훈련 성공!</p><p class="goal-learn">'+s.learn+'</p><button type="button" class="btn primary pulse" id="tutNext">'+(tut===TUT.length-1?'날씨 기록장 열기':'다음 기상 요소 익히기')+'</button>';
+    bot.innerHTML = h;
+    var row = ctl.row(s.el);
+    if (top.nextSibling!==row) row.parentNode.insertBefore(top, row);
+    if (row.nextSibling!==bot) row.parentNode.insertBefore(bot, row.nextSibling);
+    ctl.lock(openList(), s.el);
+    if (CUR===1) Scene.guide(phase==='inst' ? {target:s.inst, pill:'그림 속 <strong>'+s.instName+'</strong>'+(batchim(s.instName)?'을':'를')+' 눌러 보세요'} : null);
+  }
+  function changed(k){
+    if (!free() && phase==='goal'){
+      touched = true;
+      if (TUT[tut].ok(W)) phase = TUT[tut].inst ? 'inst' : 'done';
+      renderGoal();
+    }
     update();
+  }
+  function next(){
+    tut++; P.tut=tut; phase='goal'; touched=false; save();
+    progress(); renderGoal(); update(); table();
+    var target = free() ? $('#rec') : top;
+    var row = free() ? $('#rec') : ctl.row(TUT[tut].el);
+    row.classList.remove('fresh'); void row.offsetWidth; row.classList.add('fresh');
+    target.scrollIntoView({behavior:RM?'auto':'smooth', block:'start'});
+  }
+  root.addEventListener('click', function(e){ if (e.target.closest('#tutNext')) next(); });
+  Scene.onInst(function(key){
+    if (CUR!==1 || free() || phase!=='inst' || key!==TUT[tut].inst) return;
+    phase='done'; renderGoal();
+    if (window.innerWidth<900) bot.scrollIntoView({behavior:RM?'auto':'smooth', block:'nearest'});
   });
-  function count(){ return Object.keys(found).length; }
   function nudges(w){
     var out=[];
-    if (w.rain>0 && w.cloud<=1) out.push('구름이 거의 없는데 비나 눈이 올까요? 비와 눈은 구름에서 내려요.');
-    if (w.rain>0 && w.hum<60) out.push('비나 눈이 오는 날은 공기 중에 수증기가 많아 습도가 높은 편이에요.');
+    if (w.rain>0 && w.hum<60) out.push('비나 눈이 오는 날은 공기 중에 수증기가 많아 습도가 높은 편이에요. 습도를 살펴보세요.');
     return out;
   }
+  function types(){ var rs=P.records||[]; return RT.map(function(t){ return rs.some(t.ok); }); }
   function update(){
-    $$('#chips1 .chip').forEach(function(c){ c.classList.toggle('on', !!found[c.dataset.el]); });
-    $('#foundN').textContent = count();
-    var nd = nudges(W), box=$('#nudge1');
+    var nd = free() ? nudges(W) : [], box=$('#nudge1');
     box.hidden = !nd.length;
     box.innerHTML = nd.length ? '<b>잠깐, 이상하지 않나요?</b>'+nd.map(function(t){ return '<span>'+t+'</span>'; }).join('') : '';
-    $('#rec').hidden = count()<5;
-    $('#nowIc').innerHTML = wicon(W);
-    $('#nowW').textContent = '지금 날씨: '+wword(W);
-    $('#nowT').textContent = nowText(W);
+    $('#rec').hidden = !free();
+    if (free()){
+      var have=types();
+      $('#rtypes').innerHTML = RT.map(function(t,k){ return '<li class="'+(have[k]?'on ':'')+(t.ok(W)?'now':'')+'">'+t.ic()+'<span>'+t.label+'</span></li>'; }).join('');
+      var missing = RT.some(function(t,k){ return !have[k] && t.ok(W); });
+      $('#recBtn').classList.toggle('pulse', missing);
+      $('#nowIc').innerHTML = wicon(W);
+      $('#nowW').textContent = '지금 날씨: '+wword(W);
+      $('#nowT').textContent = nowText(W);
+    }
     Scene.set(W, {auto:true}, {});
   }
   function table(){
@@ -1626,83 +1871,104 @@ var S1 = (function(){
     $('#recBody').innerHTML = rows.map(function(w){
       return '<tr><td class="w">'+wicon(w)+wword(w)+'</td><td>'+w.temp+' ℃</td><td>'+w.hum+' %</td><td>'+(w.spd===0?'바람 없음':w.dir+'풍 '+w.spd+' m/s')+'</td><td>'+CLOUDS[w.cloud]+'</td><td>'+w.rain+' mm</td></tr>';
     }).join('');
-    $('#think').hidden = rows.length<3;
+    $('#think').hidden = !P.s1;
   }
   $('#recBtn').addEventListener('click', function(){
-    P.records = (P.records||[]).concat([copy(W)]).slice(-6);
-    if (P.records.length>=3) P.s1 = true;
-    save(); table(); marks();
+    P.records = (P.records||[]).concat([copy(W)]).slice(-8);
+    var first = !P.s1 && types().every(Boolean);
+    if (first){ P.s1 = true; }
+    save(); table(); update(); marks();
+    if (first){ toast('2단계 ‘날씨 주문’이 열렸어요!'); $('#think').scrollIntoView({behavior:RM?'auto':'smooth', block:'center'}); }
   });
-  $('#recClear').addEventListener('click', function(){ P.records=[]; save(); table(); });
-  return { show: function(){ ctl.sync(); update(); table(); } };
+  $('#recClear').addEventListener('click', function(){ P.records=[]; save(); table(); update(); });
+  return {
+    show: function(){ progress(); ctl.sync(); renderGoal(); update(); table(); },
+    reset: function(){ init(); }
+  };
 })();
 
 /* ---------- stage 2: 날씨 주문 ---------- */
+var NEED3 = 4;
+function solved(k){ return P.missions.indexOf(MISSIONS[k].id)>-1; }
+function mOpen(k){ return k===0 || P.unlockAll || solved(k) || solved(k-1); }
 var S2 = (function(){
-  var i = 0;
-  for (var n=0;n<MISSIONS.length;n++){ if (P.missions.indexOf(MISSIONS[n].id)<0){ i=n; break; } }
-  var W = copy(MISSIONS[i].start);
-  var res = $('#res2');
+  var i, W, fails=0, started=false;
+  function firstTodo(){ for (var n=0;n<MISSIONS.length;n++){ if (!solved(n)) return n; } return 0; }
+  function init(){ i = firstTodo(); W = copy(MISSIONS[i].start); started=false; }
+  init();
+  var res = $('#res2'), send=$('#sendBtn');
   var ctl = Controls($('#ctl2'), function(){ return W; }, function(){
     Scene.set(W, {auto:true}, {kite:!!MISSIONS[i].kite});
     if (res.innerHTML) res.classList.add('stale');
+    send.classList.add('pulse');
   });
   function dots(){
     $('#mdots').innerHTML = MISSIONS.map(function(m,k){
-      var d = P.missions.indexOf(m.id)>-1;
-      return '<button type="button" class="dot'+(d?' done':'')+(k===i?' cur':'')+'" data-m="'+k+'" aria-label="주문 '+(k+1)+(d?', 해결함':'')+'"'+(k===i?' aria-current="true"':'')+'>'+(k+1)+'</button>';
+      var d = solved(k), lk = !mOpen(k);
+      return '<button type="button" class="dot'+(d?' done':'')+(lk?' locked':'')+(k===i?' cur':'')+'" data-m="'+k+'" aria-label="주문 '+(k+1)+(d?', 해결함':lk?', 잠김':'')+'"'+(k===i?' aria-current="true"':'')+'>'+(lk?LOCK_SVG:(k+1))+'</button>';
     }).join('');
   }
   function load(k){
     i = k; var M = MISSIONS[i];
     W = copy(M.start);
     $('#oFace').innerHTML = AV[M.id]; $('#oWho').textContent = M.who; $('#oSay').textContent = M.say;
-    $('#hint').hidden = true; ctl.highlight([]);
-    res.innerHTML = ''; res.classList.remove('stale');
+    $('#hint').hidden = true; $('#hintBtn').hidden = false; ctl.highlight([]);
+    res.innerHTML = ''; res.classList.remove('stale'); send.classList.remove('pulse');
+    fails = 0;
     ctl.sync(); dots();
     Scene.set(W, {auto:true}, {kite:!!M.kite});
+    if (i===0 && !solved(0)) showHint('처음이니 도와줄게요.');
   }
-  $('#mdots').addEventListener('click', function(e){ var b=e.target.closest('[data-m]'); if (b) load(+b.dataset.m); });
-  $('#hintBtn').addEventListener('click', function(){
+  function showHint(pre){
     var M=MISSIONS[i], h=$('#hint');
-    h.hidden = false;
-    h.innerHTML = '이 부탁에서 살펴볼 기상 요소 '+M.key.map(tag).join('');
+    h.hidden = false; $('#hintBtn').hidden = true;
+    h.innerHTML = (pre?'<b>'+pre+'</b> ':'')+'이 부탁에서 살펴볼 기상 요소 '+M.key.map(tag).join('');
     ctl.highlight(M.key);
-  });
+  }
+  $('#mdots').addEventListener('click', function(e){ var b=e.target.closest('[data-m]'); if (!b) return; var k=+b.dataset.m; if (!mOpen(k)){ toast('앞의 주문을 해결하면 열려요.'); return; } load(k); });
+  $('#hintBtn').addEventListener('click', function(){ showHint(); });
   $('#sendBtn').addEventListener('click', function(){
     var M = MISSIONS[i];
     var list = M.rules.map(function(r){ var ok=r.ok(W), m=ok?r.yes:r.no; return {ok:ok, el:r.el, msg: typeof m==='function'?m(W):m}; });
     var all = list.every(function(r){ return r.ok; });
     var html = '<ul class="checks">'+list.map(function(r){ return li(r.ok?'ok':'no', r.el, r.msg); }).join('')+'</ul>';
+    send.classList.remove('pulse');
     if (all){
-      if (P.missions.indexOf(M.id)<0){ P.missions.push(M.id); save(); marks(); }
+      var before = P.missions.length;
+      if (!solved(i)){ P.missions.push(M.id); save(); marks(); }
+      if (before<NEED3 && P.missions.length>=NEED3 && P.missions.length<MISSIONS.length) toast('3단계 ‘날씨 예보관’이 열렸어요! 남은 주문도 해결해 보세요.');
       var next = -1;
-      for (var k=1;k<=MISSIONS.length;k++){ var c=(i+k)%MISSIONS.length; if (P.missions.indexOf(MISSIONS[c].id)<0){ next=c; break; } }
+      for (var k=1;k<=MISSIONS.length;k++){ var c=(i+k)%MISSIONS.length; if (!solved(c)){ next=c; break; } }
       html += '<div class="win">'+STAMP+'<div><p class="learn-lab">알게 된 점</p><p class="learn">'+M.learn+'</p>'+
         (next>-1 ? '<button type="button" class="btn primary" data-next="'+next+'">다음 주문 받기</button>'
                  : '<button type="button" class="btn primary" data-go="3">날씨 예보관 되러 가기</button>')+'</div></div>';
     } else {
+      fails++;
       html += '<p class="retry">✕ 표시를 보고 기상 요소를 다시 바꾼 뒤 한 번 더 보내 보세요.</p>';
+      if (fails>=2 && $('#hint').hidden) showHint('도움말이 열렸어요.');
     }
     res.innerHTML = html; res.classList.remove('stale');
     dots();
     if (window.innerWidth<900) res.scrollIntoView({behavior:RM?'auto':'smooth', block:'nearest'});
   });
   res.addEventListener('click', function(e){ var b=e.target.closest('[data-next]'); if (b){ load(+b.dataset.next); $('#s2').scrollIntoView({behavior:RM?'auto':'smooth', block:'start'}); } });
-  var started=false;
-  return { show: function(){ if (!started){ started=true; load(i); } else { ctl.sync(); dots(); Scene.set(W,{auto:true},{kite:!!MISSIONS[i].kite}); } } };
+  return {
+    show: function(){ if (!started){ started=true; load(i); } else { ctl.sync(); dots(); Scene.set(W,{auto:true},{kite:!!MISSIONS[i].kite}); } },
+    reset: function(){ init(); }
+  };
 })();
 
 /* ---------- stage 3: 날씨 예보관 ---------- */
+function rOpen(k){ return k===0 || P.unlockAll || P.stars[k]!=null || P.stars[k-1]!=null; }
 var S3 = (function(){
   var box = $('#round');
   var ri = firstOpen();
-  var ch, done;
+  var ch, done, started=false;
   function firstOpen(){ for (var k=0;k<ROUNDS.length;k++){ if (P.stars[k]==null) return k; } return ROUNDS.length; }
   function dots(){
     var html = ROUNDS.map(function(r,k){
-      var d = P.stars[k]!=null;
-      return '<button type="button" class="dot'+(d?' done':'')+(k===ri?' cur':'')+'" data-r="'+k+'" aria-label="예보 '+(k+1)+(d?', 별 '+P.stars[k]+'개':'')+'"'+(k===ri?' aria-current="true"':'')+'>'+(k+1)+'</button>';
+      var d = P.stars[k]!=null, lk=!rOpen(k);
+      return '<button type="button" class="dot'+(d?' done':'')+(lk?' locked':'')+(k===ri?' cur':'')+'" data-r="'+k+'" aria-label="예보 '+(k+1)+(d?', 별 '+P.stars[k]+'개':lk?', 잠김':'')+'"'+(k===ri?' aria-current="true"':'')+'>'+(lk?LOCK_SVG:(k+1))+'</button>';
     }).join('');
     if (firstOpen()===ROUNDS.length) html += '<button type="button" class="dot'+(ri===ROUNDS.length?' cur':'')+'" data-r="'+ROUNDS.length+'" aria-label="예보관 수첩">✎</button>';
     $('#rdots').innerHTML = html;
@@ -1713,11 +1979,14 @@ var S3 = (function(){
     Scene.set(R.w, kid(false), {neutral:true, caption: ch.outfit ? '준비를 마치면 하루 보내기를 눌러요' : '예보를 읽고 옷을 골라 입혀 보세요'});
     var ready = !!ch.outfit && ch.town!=null;
     $('#dayBtn').disabled = !ready;
+    $('#dayBtn').classList.toggle('pulse', ready);
     $('#need').hidden = ready;
+    var cur = !ch.outfit ? 'qC' : (!ch.touched && ch.town==null) ? 'qI' : ch.town==null ? 'qT' : null;
+    ['qC','qI','qT'].forEach(function(id){ var f=$('#'+id); if (f) f.classList.toggle('now', id===cur); });
   }
   function cell(el,lab,val,sub){ return '<div class="fc-cell" data-el="'+el+'"><div class="fc-ic">'+EI[el]+'</div><div class="fc-lab">'+lab+'</div><div class="fc-val">'+val+'</div>'+(sub?'<div class="fc-sub">'+sub+'</div>':'')+'</div>'; }
   function renderRound(){
-    ch = {outfit:null, items:new Set(), town:null}; done=false;
+    ch = {outfit:null, items:new Set(), town:null, touched:false}; done=false;
     var R=ROUNDS[ri], w=R.w;
     box.innerHTML =
       '<div class="fc"><div class="fc-head"><span class="fc-title">내일 예보 '+(ri+1)+'. '+R.title+'</span><span class="fc-story">'+R.story+'</span></div>'+
@@ -1728,13 +1997,13 @@ var S3 = (function(){
         cell('cloud','구름의 양', CLOUDS[w.cloud],'')+
         cell('rain','강수량', w.rain+'<small>mm</small>', w.rain>0?'비나 눈이 내려요':'내리지 않아요')+
       '</div></div>'+
-      '<fieldset class="q" id="qC"><legend>1. 무엇을 입을까요?</legend><div class="tiles">'+
+      '<fieldset class="q" id="qC"><legend>1. 무엇을 입을까요?<span class="now-tag">지금 할 일</span></legend><div class="tiles">'+
         CLOTHES.map(function(c){ return '<button type="button" class="tile" data-c="'+c[0]+'" aria-pressed="false">'+IC[c[0]]+'<span>'+c[1]+'</span></button>'; }).join('')+
       '</div></fieldset>'+
-      '<fieldset class="q" id="qI"><legend>2. 무엇을 챙길까요? <small>여러 개 골라도 돼요</small></legend><div class="tiles four">'+
+      '<fieldset class="q" id="qI"><legend>2. 무엇을 챙길까요? <small>여러 개 골라도, 안 골라도 돼요</small><span class="now-tag">지금 할 일</span></legend><div class="tiles four">'+
         ITEMS.map(function(c){ return '<button type="button" class="tile" data-i="'+c[0]+'" aria-pressed="false">'+IC[c[0]]+'<span>'+c[1]+'</span></button>'; }).join('')+
       '</div></fieldset>'+
-      '<fieldset class="q" id="qT"><legend>3. '+R.town.q+'</legend><div class="opts">'+
+      '<fieldset class="q" id="qT"><legend>3. '+R.town.q+'<span class="now-tag">지금 할 일</span></legend><div class="opts">'+
         R.town.opts.map(function(o,k){ return '<button type="button" class="opt" data-t="'+k+'" aria-pressed="false"><span class="radio" aria-hidden="true"></span><span>'+o.t+'</span></button>'; }).join('')+
       '</div></fieldset>'+
       '<div class="send"><button class="btn primary" id="dayBtn" type="button" disabled>하루 보내기</button><span class="need" id="need">옷과 마을의 대비 방법을 골라 주세요</span></div>'+
@@ -1743,8 +2012,8 @@ var S3 = (function(){
   }
   box.addEventListener('click', function(e){
     var b;
-    if ((b=e.target.closest('[data-c]')) && !done){ ch.outfit=b.dataset.c; $$('[data-c]',box).forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); }); preview(); return; }
-    if ((b=e.target.closest('[data-i]')) && !done){ var k=b.dataset.i; if (ch.items.has(k)) ch.items.delete(k); else ch.items.add(k); b.setAttribute('aria-pressed', String(ch.items.has(k))); preview(); return; }
+    if ((b=e.target.closest('[data-c]')) && !done){ if (!ch.outfit && window.innerWidth<900) setTimeout(function(){ $('#qI').scrollIntoView({behavior:RM?'auto':'smooth', block:'nearest'}); },60); ch.outfit=b.dataset.c; $$('[data-c]',box).forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); }); preview(); return; }
+    if ((b=e.target.closest('[data-i]')) && !done){ ch.touched=true; var k=b.dataset.i; if (ch.items.has(k)) ch.items.delete(k); else ch.items.add(k); b.setAttribute('aria-pressed', String(ch.items.has(k))); preview(); return; }
     if ((b=e.target.closest('[data-t]')) && !done){ ch.town=+b.dataset.t; $$('[data-t]',box).forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); }); preview(); return; }
     if (e.target.closest('#dayBtn')){ grade(); return; }
     if (e.target.closest('#nextDay')){ ri = Math.min(ri+1, ROUNDS.length); if (ri===ROUNDS.length && firstOpen()<ROUNDS.length) ri=firstOpen(); show(); $('#s3').scrollIntoView({behavior:RM?'auto':'smooth', block:'start'}); return; }
@@ -1752,7 +2021,7 @@ var S3 = (function(){
     if (e.target.closest('#reflSave')){ P.reflection=$('#refl').value; save(); $('#reflMsg').textContent='저장했어요.'; return; }
     if (e.target.closest('#again')){ P.stars=[]; save(); marks(); ri=0; show(); return; }
   });
-  $('#rdots').addEventListener('click', function(e){ var b=e.target.closest('[data-r]'); if (b){ ri=+b.dataset.r; show(); } });
+  $('#rdots').addEventListener('click', function(e){ var b=e.target.closest('[data-r]'); if (!b) return; var k=+b.dataset.r; if (k<ROUNDS.length && !rOpen(k)){ toast('앞의 예보를 먼저 풀어요.'); return; } ri=k; show(); });
   function grade(){
     done = true;
     var R=ROUNDS[ri], w=R.w;
@@ -1773,7 +2042,8 @@ var S3 = (function(){
     $$('.tile,.opt',box).forEach(function(x){ x.setAttribute('aria-disabled','true'); });
     $$('fieldset.q',box).forEach(function(f){ f.classList.add('locked'); });
     $$('[data-t]',box).forEach(function(x){ var k=+x.dataset.t; if (R.town.opts[k].ok) x.classList.add('right'); else if (k===ch.town) x.classList.add('wrong'); });
-    $('#dayBtn').disabled = true;
+    $('#dayBtn').disabled = true; $('#dayBtn').classList.remove('pulse');
+    ['qC','qI','qT'].forEach(function(id){ $('#'+id).classList.remove('now'); });
     var kd = kid(true), rx = Scene.reacts(w, {outfit:kd.outfit, items:kd.items});
     var capText = rx.flip ? '앗, 바람에 우산이 뒤집혔어요!' : rx.wet ? '앗, 옷이 다 젖었어요!' : rx.cold ? '으슬으슬, 너무 추워요!' : (rx.hot && ch.outfit!=='short') ? '땀이 뻘뻘, 옷이 너무 더워요!' : stars===3 ? '날씨에 딱 맞게 준비했어요!' : '하루를 보냈어요. 결과를 확인해 보세요.';
     Scene.set(w, kd, {caption:capText});
@@ -1808,25 +2078,79 @@ var S3 = (function(){
     Scene.set(ROUNDS[4].w, {auto:true}, {caption:'예보관 활동을 모두 마쳤어요!'});
   }
   function show(){ if (ri>=ROUNDS.length){ ri=ROUNDS.length; renderSummary(); } else renderRound(); }
-  var started=false;
-  return { show: function(){ if (!started){ started=true; show(); } else if (ri>=ROUNDS.length) renderSummary(); else if (done){ var R=ROUNDS[ri]; var kd=kid(true); Scene.set(R.w, kd, {caption:'하루를 보냈어요. 결과를 확인해 보세요.'}); } else preview(); } };
+  return {
+    show: function(){ if (!started){ started=true; show(); } else if (ri>=ROUNDS.length) renderSummary(); else if (done){ var R=ROUNDS[ri]; var kd=kid(true); Scene.set(R.w, kd, {caption:'하루를 보냈어요. 결과를 확인해 보세요.'}); } else preview(); },
+    reset: function(){ started=false; ri=firstOpen(); }
+  };
 })();
 
 /* ---------- navigation ---------- */
+var CUR = 1;
+function unlocked(n){ return n===1 || P.unlockAll || (n===2 ? !!P.s1 : P.missions.length>=NEED3); }
+function lockMsg(n){ return n===2 ? '1단계에서 기상 요소 훈련을 마치고 날씨 세 가지를 기록하면 열려요.' : '2단계에서 주문을 '+NEED3+'개 해결하면 열려요. (지금 '+Math.min(P.missions.length,NEED3)+'개)'; }
+var prevLock=null;
 function marks(){
   var d=[!!P.s1, P.missions.length>=MISSIONS.length, ROUNDS.every(function(r,k){ return P.stars[k]!=null; })];
-  $$('.step').forEach(function(b,k){ b.classList.toggle('done', d[k]); b.querySelector('.n').textContent = d[k] ? '✓' : String(k+1); });
+  var now=[];
+  $$('.step').forEach(function(b,k){
+    var lk = !unlocked(k+1); now.push(lk);
+    if (prevLock && prevLock[k] && !lk){ b.classList.add('new'); setTimeout(function(){ b.classList.remove('new'); }, 7000); }
+    b.classList.toggle('done', d[k]); b.classList.toggle('locked', lk);
+    b.setAttribute('aria-disabled', String(lk));
+    b.querySelector('.n').innerHTML = lk ? LOCK_SVG : d[k] ? '✓' : String(k+1);
+  });
+  prevLock=now;
+}
+var toastTimer=null;
+function toast(msg, goN){
+  var t=$('#toast');
+  t.innerHTML='<span>'+msg+'</span>'+(goN?'<button type="button" class="btn primary sm" data-go="'+goN+'">가 보기</button>':'');
+  t.hidden=false; t.classList.remove('pop'); void t.offsetWidth; t.classList.add('pop');
+  clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.hidden=true; }, goN?8000:4500);
 }
 function go(n){
+  if (!unlocked(n)){ toast(lockMsg(n)); return; }
+  CUR=n; P.stage=n; save();
+  $('#toast').hidden = true;
+  Scene.hideInfo();
+  Scene.guide(null);
   $$('.stage').forEach(function(s){ s.hidden = s.id!=='s'+n; });
   $$('.step').forEach(function(b){ if (+b.dataset.go===n) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); });
   if (n===1) S1.show(); else if (n===2) S2.show(); else S3.show();
   window.scrollTo({top:0, behavior:RM?'auto':'smooth'});
 }
 document.addEventListener('click', function(e){ var g=e.target.closest('[data-go]'); if (g){ go(+g.dataset.go); } });
+
+/* first visit */
+var intro=$('#intro');
+$('#introGo').addEventListener('click', function(){ P.intro=true; save(); intro.hidden=true; });
+
+/* teacher menu: tap the logo 5 times quickly */
+var taps=[], tp=$('#tpanel'), resetArmed=false;
+$('#brand').addEventListener('click', function(){
+  var now=Date.now(); taps=taps.filter(function(t){ return now-t<2500; }); taps.push(now);
+  if (taps.length>=5){ taps=[]; resetArmed=false; $('#tpReset').textContent='진행 기록 지우고 처음부터'; $('#tpUnlock').textContent = P.unlockAll ? '단계 잠금 다시 켜기' : '모든 단계 열기'; tp.hidden=false; }
+});
+$('#tpClose').addEventListener('click', function(){ tp.hidden=true; });
+$('#tpUnlock').addEventListener('click', function(){
+  P.unlockAll=!P.unlockAll; save(); tp.hidden=true; marks();
+  toast(P.unlockAll ? '모든 단계와 주문, 예보를 열었어요.' : '단계 잠금을 다시 켰어요.');
+  go(unlocked(CUR)?CUR:1);
+});
+$('#tpReset').addEventListener('click', function(){
+  if (!resetArmed){ resetArmed=true; this.textContent='한 번 더 누르면 모두 지워져요'; return; }
+  try { localStorage.removeItem(KEY); } catch(e) {}
+  P = freshP(); S1.reset(); S2.reset(); S3.reset();
+  tp.hidden=true; prevLock=null; marks(); go(1); intro.hidden=false;
+});
+[intro, tp].forEach(function(m){ m.addEventListener('keydown', function(e){ if (e.key==='Escape' && m===tp) tp.hidden=true; }); });
+
 marks();
-go(1);
+go(unlocked(P.stage)?P.stage:1);
+if (!P.intro){ intro.hidden=false; setTimeout(function(){ $('#introGo').focus(); }, 50); }
 })();
 </script>
 </body>
 </html>
+
+</body></html>
